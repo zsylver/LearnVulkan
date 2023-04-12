@@ -23,6 +23,8 @@ namespace lve
 			glfwPollEvents(); // Input
 			DrawFrame();
 		}
+
+		vkDeviceWaitIdle(m_lveDevice.Device());
 	}
 
 	void FirstApp::CreatePipelineLayout()
