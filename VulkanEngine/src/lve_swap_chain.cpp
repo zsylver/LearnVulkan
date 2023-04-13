@@ -14,14 +14,18 @@ namespace lve {
     LveSwapChain::LveSwapChain(LveDevice& deviceRef, VkExtent2D extent)
         : m_device{ deviceRef }, m_windowExtent{ extent } 
     {
-        CreateSwapChain();
-        CreateImageViews();
-        CreateRenderPass();
-        CreateDepthResources();
-        CreateFramebuffers();
-        CreateSyncObjects();
+        Init();
     }
 
+    LveSwapChain::LveSwapChain(LveDevice& deviceRef, VkExtent2D extent, std::shared_ptr<LveSwapChain> previous)
+        : m_device{ deviceRef }, m_windowExtent{ extent }, m_oldSwapChain{previous}
+    {
+        Init();
+
+        // clean up old swap chain since its no longer needed
+        m_oldSwapChain = nullptr;
+    }
+    
     LveSwapChain::~LveSwapChain() 
     {
         for (auto imageView : m_swapChainImageViews) 
@@ -57,6 +61,16 @@ namespace lve {
             vkDestroySemaphore(m_device.Device(), m_imageAvailableSemaphores[i], nullptr);
             vkDestroyFence(m_device.Device(), m_inFlightFences[i], nullptr);
         }
+    }
+
+    void LveSwapChain::Init()
+    {
+        CreateSwapChain();
+        CreateImageViews();
+        CreateRenderPass();
+        CreateDepthResources();
+        CreateFramebuffers();
+        CreateSyncObjects();
     }
 
     VkResult LveSwapChain::AcquireNextImage(uint32_t* imageIndex) 
@@ -130,7 +144,7 @@ namespace lve {
         return result;
     }
 
-    void LveSwapChain::CreateSwapChain() 
+    void LveSwapChain::CreateSwapChain()
     {
         SwapChainSupportDetails swapChainSupport = m_device.GetSwapChainSupport();
 
@@ -178,8 +192,8 @@ namespace lve {
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
 
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
-
+        createInfo.oldSwapchain = m_oldSwapChain == nullptr ? VK_NULL_HANDLE : m_oldSwapChain->m_swapChain;
+        
         if (vkCreateSwapchainKHR(m_device.Device(), &createInfo, nullptr, &m_swapChain) != VK_SUCCESS) 
         {
             throw std::runtime_error("failed to create swap chain!");

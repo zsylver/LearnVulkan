@@ -31,28 +31,17 @@ namespace lve
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 	}
 
-	void LvePipeline::DefaultPipelineConfigInfo(
-		PipelineConfigInfo& configInfo, uint32_t width, uint32_t height)
+	void LvePipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 	{
 		configInfo.m_inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		configInfo.m_inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		configInfo.m_inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
-		configInfo.m_viewport.x = 0.0f;
-		configInfo.m_viewport.y = 0.0f;
-		configInfo.m_viewport.width = static_cast<float>(width);
-		configInfo.m_viewport.height = static_cast<float>(height);
-		configInfo.m_viewport.minDepth = 0.0f;
-		configInfo.m_viewport.maxDepth = 1.0f;
-
-		configInfo.m_scissor.offset = { 0, 0 };
-		configInfo.m_scissor.extent = { width, height };
-
 		configInfo.m_viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		configInfo.m_viewportInfo.viewportCount = 1;
-		configInfo.m_viewportInfo.pViewports = &configInfo.m_viewport;
+		configInfo.m_viewportInfo.pViewports = nullptr;
 		configInfo.m_viewportInfo.scissorCount = 1;
-		configInfo.m_viewportInfo.pScissors = &configInfo.m_scissor;
+		configInfo.m_viewportInfo.pScissors = nullptr;
 
 		configInfo.m_rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		configInfo.m_rasterizationInfo.depthClampEnable = VK_FALSE;
@@ -105,6 +94,13 @@ namespace lve
 		configInfo.m_depthStencilInfo.stencilTestEnable = VK_FALSE;
 		configInfo.m_depthStencilInfo.front = {};  // Optional
 		configInfo.m_depthStencilInfo.back = {};   // Optional
+
+		configInfo.m_dynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		configInfo.m_dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		configInfo.m_dynamicStateInfo.pDynamicStates = configInfo.m_dynamicStateEnables.data();
+		configInfo.m_dynamicStateInfo.dynamicStateCount =
+			static_cast<uint32_t>(configInfo.m_dynamicStateEnables.size());
+		configInfo.m_dynamicStateInfo.flags = 0;
 	}
 
 	std::vector<char> LvePipeline::ReadFile(const std::string& filepath)
@@ -177,7 +173,7 @@ namespace lve
 		pipelineInfo.pMultisampleState = &configInfo.m_multisampleInfo;
 		pipelineInfo.pColorBlendState = &configInfo.m_colorBlendInfo;
 		pipelineInfo.pDepthStencilState = &configInfo.m_depthStencilInfo;
-		pipelineInfo.pDynamicState = nullptr;
+		pipelineInfo.pDynamicState = &configInfo.m_dynamicStateInfo;
 
 		pipelineInfo.layout = configInfo.m_pipelineLayout;
 		pipelineInfo.renderPass = configInfo.m_renderPass;
