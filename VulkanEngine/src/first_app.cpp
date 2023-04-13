@@ -127,9 +127,9 @@ namespace lve
 	{
 		std::vector<LveModel::Vertex> vertices;
 		//{
-		//	{{0.0f, -0.5f}},
-		//	{{0.5f, 0.5f}},
-		//	{{-0.5f, 0.5f}}
+		//	{{0.0f, -0.5f}, {1, 0, 0}},
+		//	{{0.5f, 0.5f}, {0, 1, 0}},
+		//	{{-0.5f, 0.5f}, {0, 0, 1}}
 		//};
 		Sierpinski(vertices, 5, { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.0f, -0.5f });
 		m_lveModel = std::make_unique<LveModel>(m_lveDevice, vertices);
@@ -139,9 +139,9 @@ namespace lve
 	{
 		if (depth <= 0) 
 		{
-			vertices.push_back({ top });
-			vertices.push_back({ right });
-			vertices.push_back({ left });
+			vertices.push_back({ top, { 1, 0, 0} });
+			vertices.push_back({ right, { 0, 1, 0} });
+			vertices.push_back({ left, { 0, 0, 1} });
 		}
 		else 
 		{
