@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\first_app.cpp" />
+    <ClCompile Include="src\lve_model.cpp" />
     <ClCompile Include="src\lve_swap_chain.cpp" />
     <ClCompile Include="src\lve_pipeline.cpp" />
     <ClCompile Include="src\lve_window.cpp" />
@@ -28,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\first_app.hpp" />
+    <ClInclude Include="src\lve_model.hpp" />
     <ClInclude Include="src\lve_swap_chain.hpp" />
     <ClInclude Include="src\lve_pipeline.hpp" />
     <ClInclude Include="src\lve_window.hpp" />
@@ -92,15 +94,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(SolutionDir)VulkanEngine\Intermediates\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)VulkanEngine\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(SolutionDir)VulkanEngine\Intermediates\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)VulkanEngine\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(SolutionDir)VulkanEngine\Intermediates\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)VulkanEngine\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(SolutionDir)VulkanEngine\Intermediates\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)VulkanEngine\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -6,6 +6,8 @@ namespace lve
 {
 	FirstApp::FirstApp()
 	{
+		LoadModels();
+
 		CreatePipelineLayout();
 		CreatePipeline();
 		CreateCommandBuffers();
@@ -40,6 +42,7 @@ namespace lve
 			throw std::runtime_error("failed to create pipeline layout");
 		}
 	}
+
 	void FirstApp::CreatePipeline()
 	{
 		PipelineConfigInfo pipelineConfig{};
@@ -55,6 +58,7 @@ namespace lve
 			"shaders/simple_shader.frag.spv",
 			pipelineConfig);
 	}
+
 	void FirstApp::CreateCommandBuffers()
 	{
 		m_commandBuffers.resize(m_lveSwapChain.ImageCount());
@@ -95,7 +99,8 @@ namespace lve
 			vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 			m_lvePipeline->Bind(m_commandBuffers[i]);
-			vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+			m_lveModel->Bind(m_commandBuffers[i]);
+			m_lveModel->Draw(m_commandBuffers[i]);
 
 			vkCmdEndRenderPass(m_commandBuffers[i]);
 			if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS) {
@@ -115,6 +120,37 @@ namespace lve
 		result = m_lveSwapChain.SubmitCommandBuffers(&m_commandBuffers[imageIndex], &imageIndex);
 		if (result != VK_SUCCESS) {
 			throw std::runtime_error("failed to present swap chain image!");
+		}
+	}
+
+	void FirstApp::LoadModels()
+	{
+		std::vector<LveModel::Vertex> vertices;
+		//{
+		//	{{0.0f, -0.5f}},
+		//	{{0.5f, 0.5f}},
+		//	{{-0.5f, 0.5f}}
+		//};
+		Sierpinski(vertices, 5, { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.0f, -0.5f });
+		m_lveModel = std::make_unique<LveModel>(m_lveDevice, vertices);
+	}
+
+	void FirstApp::Sierpinski(std::vector<LveModel::Vertex>& vertices, int depth, glm::vec2 left, glm::vec2 right, glm::vec2 top)
+	{
+		if (depth <= 0) 
+		{
+			vertices.push_back({ top });
+			vertices.push_back({ right });
+			vertices.push_back({ left });
+		}
+		else 
+		{
+			auto leftTop = 0.5f * (left + top);
+			auto rightTop = 0.5f * (right + top);
+			auto leftRight = 0.5f * (left + right);
+			Sierpinski(vertices, depth - 1, left, leftRight, leftTop);
+			Sierpinski(vertices, depth - 1, leftRight, right, rightTop);
+			Sierpinski(vertices, depth - 1, leftTop, rightTop, top);
 		}
 	}
 }

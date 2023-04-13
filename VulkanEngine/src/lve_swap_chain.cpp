@@ -22,7 +22,8 @@ namespace lve {
         CreateSyncObjects();
     }
 
-    LveSwapChain::~LveSwapChain() {
+    LveSwapChain::~LveSwapChain() 
+    {
         for (auto imageView : m_swapChainImageViews) 
         {
             vkDestroyImageView(m_device.Device(), imageView, nullptr);

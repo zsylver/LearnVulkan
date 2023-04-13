@@ -4,6 +4,7 @@
 #include "lve_window.hpp"
 #include "lve_swap_chain.hpp"
 #include "lve_device.hpp"
+#include "lve_model.hpp"
 
 // std
 #include <memory>
@@ -36,5 +37,15 @@ namespace lve
 		std::unique_ptr<LvePipeline> m_lvePipeline;
 		VkPipelineLayout m_pipelineLayout;
 		std::vector<VkCommandBuffer> m_commandBuffers;
+
+		void LoadModels();
+		void Sierpinski(
+			std::vector<LveModel::Vertex>& vertices,
+			int depth,
+			glm::vec2 left,
+			glm::vec2 right,
+			glm::vec2 top);
+
+		std::unique_ptr<LveModel> m_lveModel;
 	};
 }	// namespace lve
