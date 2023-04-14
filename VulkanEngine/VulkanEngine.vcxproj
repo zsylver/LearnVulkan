@@ -21,20 +21,24 @@
   <ItemGroup>
     <ClCompile Include="src\first_app.cpp" />
     <ClCompile Include="src\lve_model.cpp" />
+    <ClCompile Include="src\lve_renderer.cpp" />
     <ClCompile Include="src\lve_swap_chain.cpp" />
     <ClCompile Include="src\lve_pipeline.cpp" />
     <ClCompile Include="src\lve_window.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\lve_device.cpp" />
+    <ClCompile Include="src\simple_render_system.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\first_app.hpp" />
     <ClInclude Include="src\lve_game_object.hpp" />
     <ClInclude Include="src\lve_model.hpp" />
+    <ClInclude Include="src\lve_renderer.hpp" />
     <ClInclude Include="src\lve_swap_chain.hpp" />
     <ClInclude Include="src\lve_pipeline.hpp" />
     <ClInclude Include="src\lve_window.hpp" />
     <ClInclude Include="src\lve_device.hpp" />
+    <ClInclude Include="src\simple_render_system.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
