@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\first_app.hpp" />
+    <ClInclude Include="src\lve_game_object.hpp" />
     <ClInclude Include="src\lve_model.hpp" />
     <ClInclude Include="src\lve_swap_chain.hpp" />
     <ClInclude Include="src\lve_pipeline.hpp" />
