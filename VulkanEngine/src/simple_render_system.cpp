@@ -68,8 +68,8 @@ namespace lve {
         // update
         for (auto& obj : gameObjects) 
         {
-            obj.m_transform.m_rotation.y = glm::mod(obj.m_transform.m_rotation.y + 0.0001f, glm::two_pi<float>());
-            obj.m_transform.m_rotation.x = glm::mod(obj.m_transform.m_rotation.x + 0.0001f, glm::two_pi<float>());
+            //obj.m_transform.m_rotation.y = glm::mod(obj.m_transform.m_rotation.y + 0.0001f, glm::two_pi<float>());
+            //obj.m_transform.m_rotation.x = glm::mod(obj.m_transform.m_rotation.x + 0.0001f, glm::two_pi<float>());
             //obj.m_transform.m_rotation.z = glm::mod(obj.m_transform.m_rotation.z + 0.0001f, glm::two_pi<float>());
             
             SimplePushConstantData push{};

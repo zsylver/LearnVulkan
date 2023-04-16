@@ -1,4 +1,5 @@
 #include "first_app.hpp"
+#include "keyboard_movement_controller.hpp"
 #include "simple_render_system.hpp"
 
 // libs
@@ -9,8 +10,9 @@
 
 // std
 #include <array>
-#include <stdexcept>
 #include <cassert>
+#include <chrono>
+#include <stdexcept>
 namespace lve
 {
 
@@ -97,9 +99,23 @@ namespace lve
 		// camera.SetViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f));
 		camera.SetViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
 
+		auto viewerObject = LveGameObject::CreateGameObject();
+		KeyboardMovementController cameraController{};
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+
 		while (!m_lveWindow.ShouldClose())
 		{
 			glfwPollEvents(); // Input
+
+			auto newTime = std::chrono::high_resolution_clock::now();
+			float dt =
+				std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+			currentTime = newTime;
+
+			// Movement Input
+			cameraController.MoveInPlaneXZ(m_lveWindow.GetGLFWwindow(), dt, viewerObject);
+			camera.SetViewYXZ(viewerObject.m_transform.m_translation, viewerObject.m_transform.m_rotation);
 
 			float aspect = m_lveRenderer.GetAspectRatio();
 			// camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
