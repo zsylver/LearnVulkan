@@ -26,12 +26,6 @@ namespace lve
 		void Run();
 	private:
 		void LoadGameObjects();
-		void Sierpinski(
-			std::vector<LveModel::Vertex>& vertices,
-			int depth,
-			glm::vec2 left,
-			glm::vec2 right,
-			glm::vec2 top);
 
 		LveWindow m_lveWindow{WIDTH, HEIGHT, "Hello Vulkan!"};
 		LveDevice m_lveDevice{ m_lveWindow };

@@ -14,9 +14,8 @@
 namespace lve {
 
     struct SimplePushConstantData {
-        glm::mat2 transform{ 1.f };
-        glm::vec2 offset;
-        alignas(16) glm::vec3 color;
+        glm::mat4 transform{ 1.f };
+        alignas(16) glm::vec3 color{};
     };
 
     SimpleRenderSystem::SimpleRenderSystem(LveDevice& device, VkRenderPass renderPass)
@@ -62,25 +61,19 @@ namespace lve {
     }
 
     void SimpleRenderSystem::RenderGameObjects(
-        VkCommandBuffer commandBuffer, std::vector<LveGameObject>& gameObjects) {
+        VkCommandBuffer commandBuffer, std::vector<LveGameObject>& gameObjects, const LveCamera& camera) {
         m_lvePipeline->Bind(commandBuffer);
 
         // update
-        int i = 0;
-        for (auto& obj : gameObjects)
+        for (auto& obj : gameObjects) 
         {
-            i += 1;
-            obj.m_transform2D.m_rotation =
-                glm::mod<float>(obj.m_transform2D.m_rotation + 0.00001f * i, 2.0f * glm::pi<float>());
-        }
-
-        for (auto& obj : gameObjects) {
-            obj.m_transform2D.m_rotation = glm::mod(obj.m_transform2D.m_rotation + 0.00001f * i, glm::two_pi<float>());
-
+            obj.m_transform.m_rotation.y = glm::mod(obj.m_transform.m_rotation.y + 0.0001f, glm::two_pi<float>());
+            obj.m_transform.m_rotation.x = glm::mod(obj.m_transform.m_rotation.x + 0.0001f, glm::two_pi<float>());
+            //obj.m_transform.m_rotation.z = glm::mod(obj.m_transform.m_rotation.z + 0.0001f, glm::two_pi<float>());
+            
             SimplePushConstantData push{};
-            push.offset = obj.m_transform2D.m_translation;
             push.color = obj.m_color;
-            push.transform = obj.m_transform2D.mat2();
+            push.transform = camera.GetProjection() * obj.m_transform.mat4();
 
             vkCmdPushConstants(
                 commandBuffer,

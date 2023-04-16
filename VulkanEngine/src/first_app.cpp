@@ -21,6 +21,68 @@ namespace lve
 		alignas(16) glm::vec3 color;
 	};
 
+	// temporary helper function, creates a 1x1x1 cube centered at offset
+	std::unique_ptr<LveModel> CreateCubeModel(LveDevice& device, glm::vec3 offset)
+	{
+		std::vector<LveModel::Vertex> vertices
+		{
+			// left face (white)
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+
+			// right face (yellow)
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+
+			// top face (orange, remember y axis points down)
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+
+			// bottom face (red)
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+
+			// nose face (blue)
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+
+			// tail face (green)
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+		};
+
+		for (auto& v : vertices)
+		{
+			v.position += offset;
+		}
+
+		return std::make_unique<LveModel>(device, vertices);
+	}
+
 	FirstApp::FirstApp()
 	{
 		LoadGameObjects();
@@ -31,13 +93,20 @@ namespace lve
 	void lve::FirstApp::Run()
 	{
 		SimpleRenderSystem simpleRenderSystem{ m_lveDevice, m_lveRenderer.GetSwapChainRenderPass() };
+		LveCamera camera{};
 
 		while (!m_lveWindow.ShouldClose())
 		{
 			glfwPollEvents(); // Input
-			if (auto commandBuffer = m_lveRenderer.BeginFrame()) {
+
+			float aspect = m_lveRenderer.GetAspectRatio();
+			// camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
+			camera.SetPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+
+			if (auto commandBuffer = m_lveRenderer.BeginFrame()) 
+			{
 				m_lveRenderer.BeginSwapChainRenderPass(commandBuffer);
-				simpleRenderSystem.RenderGameObjects(commandBuffer, m_gameObjects);
+				simpleRenderSystem.RenderGameObjects(commandBuffer, m_gameObjects, camera);
 				m_lveRenderer.EndSwapChainRenderPass(commandBuffer);
 				m_lveRenderer.EndFrame();
 			}
@@ -48,66 +117,13 @@ namespace lve
 
 	void FirstApp::LoadGameObjects()
 	{
-		std::vector<LveModel::Vertex> vertices;
-		//{
-		//	{{0.0f, -0.5f}, {1, 0, 0}},
-		//	{{0.5f, 0.5f}, {0, 1, 0}},
-		//	{{-0.5f, 0.5f}, {0, 0, 1}}
-		//};
-		Sierpinski(vertices, 5, { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.0f, -0.5f });
-		auto lveModel = std::make_shared<LveModel>(m_lveDevice, vertices);
-
-		auto triangle = LveGameObject::CreateGameObject();
-
-		std::vector<glm::vec3> colors
-		{
-			{1.0f, 0.7f, 0.73f},
-			{1.0f, 0.87f, 0.73f},
-			{1.0f, 1.0f, 0.73f},
-			{0.73f, 1.0f, 0.8f},
-			{0.73, 0.88f, 1.0f}
-		};
-
-		// applying gamma
-		for (auto& color : colors) {
-			color = glm::pow(color, glm::vec3{ 2.2f });
-		}
-
-		for (int i = 0; i < 40; i++) {
-			auto triangle = LveGameObject::CreateGameObject();
-			triangle.m_model = lveModel;
-			triangle.m_transform2D.m_scale = glm::vec2(.5f) + i * 0.025f;
-			triangle.m_transform2D.m_rotation = i * glm::pi<float>() * .025f;
-			triangle.m_color = colors[i % colors.size()];
-			m_gameObjects.push_back(std::move(triangle));
-		}
-
-		//triangle.m_model = lveModel;
-		//triangle.m_color = { 0.1f, 0.8f, 0.1f };
-		//triangle.m_transform2D.m_translation.x = 0.2f;
-		//triangle.m_transform2D.m_scale = { 2.0f, 0.5f };
-		//triangle.m_transform2D.m_rotation = 0.25f * glm::two_pi<float>();
-
-		//m_gameObjects.push_back(std::move(triangle));
+		std::shared_ptr<LveModel> lveModel = CreateCubeModel(m_lveDevice, { .0f, .0f, .0f });
+		auto cube = LveGameObject::CreateGameObject();
+		cube.m_model = lveModel;
+		cube.m_transform.m_translation = { .0f, .0f, 2.5f };
+		cube.m_transform.m_scale = { .5f, .5f, .5f };
+		m_gameObjects.push_back(std::move(cube));
 	}
 
-	void FirstApp::Sierpinski(std::vector<LveModel::Vertex>& vertices, int depth, glm::vec2 left, glm::vec2 right, glm::vec2 top)
-	{
-		if (depth <= 0)
-		{
-			vertices.push_back({ top, { 1, 0, 0} });
-			vertices.push_back({ right, { 0, 1, 0} });
-			vertices.push_back({ left, { 0, 0, 1} });
-		}
-		else
-		{
-			auto leftTop = 0.5f * (left + top);
-			auto rightTop = 0.5f * (right + top);
-			auto leftRight = 0.5f * (left + right);
-			Sierpinski(vertices, depth - 1, left, leftRight, leftTop);
-			Sierpinski(vertices, depth - 1, leftRight, right, rightTop);
-			Sierpinski(vertices, depth - 1, leftTop, rightTop, top);
-		}
-	}
 }
 
