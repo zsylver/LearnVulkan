@@ -15,14 +15,6 @@
 #include <stdexcept>
 namespace lve
 {
-
-	struct SimplePushConstantData
-	{
-		glm::mat2 transform{ 1.f };
-		glm::vec2 offset;
-		alignas(16) glm::vec3 color;
-	};
-
 	FirstApp::FirstApp()
 	{
 		LoadGameObjects();
@@ -74,12 +66,19 @@ namespace lve
 	void FirstApp::LoadGameObjects()
 	{
 		std::shared_ptr<LveModel> lveModel =
-			LveModel::CreateModelFromFile(m_lveDevice, "models/smooth_vase.obj");
-		auto gameObj = LveGameObject::CreateGameObject();
-		gameObj.m_model = lveModel;
-		gameObj.m_transform.m_translation = { .0f, .0f, 2.5f };
-		gameObj.m_transform.m_scale = glm::vec3(3.f);
-		m_gameObjects.push_back(std::move(gameObj));
+			LveModel::CreateModelFromFile(m_lveDevice, "models/flat_vase.obj");
+		auto flatVase = LveGameObject::CreateGameObject();
+		flatVase.m_model = lveModel;
+		flatVase.m_transform.m_translation = { -.5f, .5f, 2.5f };
+		flatVase.m_transform.m_scale = { 3.f, 1.5f, 3.f };
+		m_gameObjects.push_back(std::move(flatVase));
+
+		lveModel = LveModel::CreateModelFromFile(m_lveDevice, "models/smooth_vase.obj");
+		auto smoothVase = LveGameObject::CreateGameObject();
+		smoothVase.m_model = lveModel;
+		smoothVase.m_transform.m_translation = { .5f, .5f, 2.5f };
+		smoothVase.m_transform.m_scale = { 3.f, 1.5f, 3.f };
+		m_gameObjects.push_back(std::move(smoothVase));
 	}
 
 }
