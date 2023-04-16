@@ -61,31 +61,27 @@ namespace lve {
     }
 
     void SimpleRenderSystem::RenderGameObjects(
-        VkCommandBuffer commandBuffer, std::vector<LveGameObject>& gameObjects, const LveCamera& camera) {
-        m_lvePipeline->Bind(commandBuffer);
-        auto projectionView = camera.GetProjection() * camera.GetView();
+        FrameInfo& frameInfo, std::vector<LveGameObject>& gameObjects) {
+        m_lvePipeline->Bind(frameInfo.m_commandBuffer);
+        auto projectionView = frameInfo.m_camera.GetProjection() * frameInfo.m_camera.GetView();
 
         // update
         for (auto& obj : gameObjects) 
-        {
-            //obj.m_transform.m_rotation.y = glm::mod(obj.m_transform.m_rotation.y + 0.0001f, glm::two_pi<float>());
-            //obj.m_transform.m_rotation.x = glm::mod(obj.m_transform.m_rotation.x + 0.0001f, glm::two_pi<float>());
-            //obj.m_transform.m_rotation.z = glm::mod(obj.m_transform.m_rotation.z + 0.0001f, glm::two_pi<float>());
-            
+        {       
             SimplePushConstantData push{};
             auto modelMatrix = obj.m_transform.mat4();
             push.transform = projectionView * modelMatrix;
             push.normalMatrix = obj.m_transform.NormalMatrix();
 
             vkCmdPushConstants(
-                commandBuffer,
+                frameInfo.m_commandBuffer,
                 m_pipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(SimplePushConstantData),
                 &push);
-            obj.m_model->Bind(commandBuffer);
-            obj.m_model->Draw(commandBuffer);
+            obj.m_model->Bind(frameInfo.m_commandBuffer);
+            obj.m_model->Draw(frameInfo.m_commandBuffer);
         }
     }
 

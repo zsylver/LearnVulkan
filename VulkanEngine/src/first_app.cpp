@@ -1,4 +1,5 @@
 #include "first_app.hpp"
+#include "lve_buffer.hpp"
 #include "keyboard_movement_controller.hpp"
 #include "simple_render_system.hpp"
 
@@ -15,6 +16,12 @@
 #include <stdexcept>
 namespace lve
 {
+	struct GlobalUBO 
+	{
+		glm::mat4 projectionView{ 1.f };
+		glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.f, -3.f, -1.f });
+	};
+
 	FirstApp::FirstApp()
 	{
 		LoadGameObjects();
@@ -24,6 +31,18 @@ namespace lve
 
 	void lve::FirstApp::Run()
 	{
+		std::vector<std::unique_ptr<LveBuffer>> uboBuffers(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < uboBuffers.size(); i++) 
+		{
+			uboBuffers[i] = std::make_unique<LveBuffer>(
+				m_lveDevice,
+				sizeof(GlobalUBO),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+			uboBuffers[i]->Map();
+		}
+
 		SimpleRenderSystem simpleRenderSystem{ m_lveDevice, m_lveRenderer.GetSwapChainRenderPass() };
 		LveCamera camera{};
 		// camera.SetViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f));
@@ -39,12 +58,12 @@ namespace lve
 			glfwPollEvents(); // Input
 
 			auto newTime = std::chrono::high_resolution_clock::now();
-			float dt =
+			float frameTime =
 				std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 			currentTime = newTime;
 
 			// Movement Input
-			cameraController.MoveInPlaneXZ(m_lveWindow.GetGLFWwindow(), dt, viewerObject);
+			cameraController.MoveInPlaneXZ(m_lveWindow.GetGLFWwindow(), frameTime, viewerObject);
 			camera.SetViewYXZ(viewerObject.m_transform.m_translation, viewerObject.m_transform.m_rotation);
 
 			float aspect = m_lveRenderer.GetAspectRatio();
@@ -53,8 +72,18 @@ namespace lve
 
 			if (auto commandBuffer = m_lveRenderer.BeginFrame()) 
 			{
+				int frameIndex = m_lveRenderer.GetFrameIndex();
+				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, camera };
+
+				// update
+				GlobalUBO ubo{};
+				ubo.projectionView = camera.GetProjection() * camera.GetView();
+				uboBuffers[frameIndex]->WriteToBuffer(&ubo);
+				uboBuffers[frameIndex]->Flush();
+
+				// render
 				m_lveRenderer.BeginSwapChainRenderPass(commandBuffer);
-				simpleRenderSystem.RenderGameObjects(commandBuffer, m_gameObjects, camera);
+				simpleRenderSystem.RenderGameObjects(frameInfo, m_gameObjects);
 				m_lveRenderer.EndSwapChainRenderPass(commandBuffer);
 				m_lveRenderer.EndFrame();
 			}
