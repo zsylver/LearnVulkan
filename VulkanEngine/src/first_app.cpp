@@ -24,6 +24,11 @@ namespace lve
 
 	FirstApp::FirstApp()
 	{
+		m_globalPool =
+			LveDescriptorPool::Builder(m_lveDevice)
+			.SetMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.Build();
 		LoadGameObjects();
 	}
 
@@ -43,7 +48,21 @@ namespace lve
 			uboBuffers[i]->Map();
 		}
 
-		SimpleRenderSystem simpleRenderSystem{ m_lveDevice, m_lveRenderer.GetSwapChainRenderPass() };
+		auto globalSetLayout =
+			LveDescriptorSetLayout::Builder(m_lveDevice)
+			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.Build();
+
+		std::vector<VkDescriptorSet> globalDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < globalDescriptorSets.size(); i++) 
+		{
+			auto bufferInfo = uboBuffers[i]->DescriptorInfo();
+			LveDescriptorWriter(*globalSetLayout, *m_globalPool)
+				.WriteBuffer(0, &bufferInfo)
+				.Build(globalDescriptorSets[i]);
+		}
+
+		SimpleRenderSystem simpleRenderSystem{ m_lveDevice, m_lveRenderer.GetSwapChainRenderPass(), globalSetLayout->GetDescriptorSetLayout() };
 		LveCamera camera{};
 		// camera.SetViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f));
 		camera.SetViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
@@ -73,7 +92,7 @@ namespace lve
 			if (auto commandBuffer = m_lveRenderer.BeginFrame()) 
 			{
 				int frameIndex = m_lveRenderer.GetFrameIndex();
-				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, camera };
+				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex] };
 
 				// update
 				GlobalUBO ubo{};
