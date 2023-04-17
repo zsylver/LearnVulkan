@@ -9,6 +9,7 @@
 // std
 #include <array>
 #include <cassert>
+#include <map>
 #include <stdexcept>
 
 namespace lve {
@@ -60,6 +61,7 @@ namespace lve {
 
         PipelineConfigInfo pipelineConfig{};
         LvePipeline::DefaultPipelineConfigInfo(pipelineConfig);
+        LvePipeline::EnableAlphaBlending(pipelineConfig);
         pipelineConfig.m_attributeDescriptions.clear();
         pipelineConfig.m_bindingDescriptions.clear();
         pipelineConfig.m_renderPass = renderPass;
@@ -95,6 +97,21 @@ namespace lve {
 
     void PointLightSystem::Render(FrameInfo& frameInfo)
     {
+        // don't need to sort actually
+
+        // sort lights
+        //std::map<float, LveGameObject::id_t> sorted;
+        //for (auto& kv : frameInfo.m_gameObjects) 
+        //{
+        //    auto& obj = kv.second;
+        //    if (obj.m_pointLight == nullptr) continue;
+
+        //    // calculate distance
+        //    auto offset = frameInfo.m_camera.GetPosition() - obj.m_transform.m_translation;
+        //    float disSquared = glm::dot(offset, offset);
+        //    sorted[disSquared] = obj.GetID();
+        //}
+
         m_lvePipeline->Bind(frameInfo.m_commandBuffer);
 
         vkCmdBindDescriptorSets(

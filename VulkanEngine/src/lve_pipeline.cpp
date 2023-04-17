@@ -106,6 +106,21 @@ namespace lve
 		configInfo.m_attributeDescriptions = LveModel::Vertex::GetAttributeDescriptions();
 	}
 
+	void LvePipeline::EnableAlphaBlending(PipelineConfigInfo& configInfo)
+	{
+		configInfo.m_depthStencilInfo.depthWriteEnable = VK_FALSE;
+		configInfo.m_colorBlendAttachment.blendEnable = VK_TRUE;
+		configInfo.m_colorBlendAttachment.colorWriteMask =
+			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+			VK_COLOR_COMPONENT_A_BIT;
+		configInfo.m_colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		configInfo.m_colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+		configInfo.m_colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+		configInfo.m_colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		configInfo.m_colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+		configInfo.m_colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+	}
+
 	std::vector<char> LvePipeline::ReadFile(const std::string& filepath)
 	{
 		std::ifstream file{ filepath, std::ios::ate | std::ios::binary };
