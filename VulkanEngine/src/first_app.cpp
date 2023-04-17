@@ -1,8 +1,8 @@
 #include "first_app.hpp"
 #include "lve_buffer.hpp"
 #include "keyboard_movement_controller.hpp"
-#include "simple_render_system.hpp"
 #include "point_light_system.hpp"
+#include "simple_render_system.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -17,15 +17,6 @@
 #include <stdexcept>
 namespace lve
 {
-	struct GlobalUBO 
-	{
-		glm::mat4 projection{ 1.f };
-		glm::mat4 view{ 1.f };
-		glm::vec4 ambientLightColor{ 0.9f, 0.9f, 0.5f, 0.1f }; // w is light intensity
-		glm::vec3 lightPosition{ 0.f, -1.f, 0.f };
-		alignas(16) glm::vec4 lightColor{ 1.0f, 1.0f, 1.0f, 1.f }; // w is light intensity
-	};
-
 	FirstApp::FirstApp()
 	{
 		m_globalPool =
@@ -115,6 +106,7 @@ namespace lve
 				GlobalUBO ubo{};
 				ubo.projection = camera.GetProjection();
 				ubo.view = camera.GetView();
+				pointLightSystem.Update(frameInfo, ubo);
 				uboBuffers[frameIndex]->WriteToBuffer(&ubo);
 				uboBuffers[frameIndex]->Flush();
 
@@ -153,7 +145,28 @@ namespace lve
 		floor.m_transform.m_translation = { 0.0f, 0.5f, 0.0f };
 		floor.m_transform.m_scale = { 3.0f, 1.0f, 3.0f };
 		m_gameObjects.emplace(floor.GetID(), std::move(floor));
-	}
 
+		std::vector<glm::vec3> lightColors
+		{
+			{1.f, .1f, .1f},
+			{.1f, .1f, 1.f},
+			{.1f, 1.f, .1f},
+			{1.f, 1.f, .1f},
+			{.1f, 1.f, 1.f},
+			{1.f, 1.f, 1.f}
+		};
+
+		for (int i = 0; i < lightColors.size(); i++)
+		{
+			auto pointLight = LveGameObject::MakePointLight(0.6f);
+			pointLight.m_color = lightColors[i];
+			auto rotateLight = glm::rotate(
+				glm::mat4(1.f),
+				(i * glm::two_pi<float>()) / lightColors.size(),
+				{ 0.f, -1.f, 0.f });
+			pointLight.m_transform.m_translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+			m_gameObjects.emplace(pointLight.GetID(), std::move(pointLight));
+		}
+	}
 }
 
