@@ -13,6 +13,8 @@ namespace lve
 		PipelineConfigInfo(const PipelineConfigInfo&) = delete;
 		PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
+		std::vector<VkVertexInputBindingDescription> m_bindingDescriptions{};
+		std::vector<VkVertexInputAttributeDescription> m_attributeDescriptions{};
 		VkPipelineViewportStateCreateInfo m_viewportInfo;
 		VkPipelineInputAssemblyStateCreateInfo m_inputAssemblyInfo;
 		VkPipelineRasterizationStateCreateInfo m_rasterizationInfo;

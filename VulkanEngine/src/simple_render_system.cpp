@@ -13,13 +13,15 @@
 
 namespace lve {
 
-    struct SimplePushConstantData {
+    struct SimplePushConstantData 
+    {
         glm::mat4 modelMatrix{ 1.f };
         glm::mat4 normalMatrix{ 1.f };
     };
 
     SimpleRenderSystem::SimpleRenderSystem(LveDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
-        : m_lveDevice{ device } {
+        : m_lveDevice{ device } 
+    {
         CreatePipelineLayout(globalSetLayout);
         CreatePipeline(renderPass);
     }

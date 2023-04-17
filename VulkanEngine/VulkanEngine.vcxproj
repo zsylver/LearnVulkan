@@ -32,6 +32,7 @@
     <ClCompile Include="src\lve_window.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\lve_device.cpp" />
+    <ClCompile Include="src\point_light_system.cpp" />
     <ClCompile Include="src\simple_render_system.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -49,10 +50,13 @@
     <ClInclude Include="src\lve_utils.hpp" />
     <ClInclude Include="src\lve_window.hpp" />
     <ClInclude Include="src\lve_device.hpp" />
+    <ClInclude Include="src\point_light_system.hpp" />
     <ClInclude Include="src\simple_render_system.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
+    <None Include="shaders\point_light.frag" />
+    <None Include="shaders\point_light.vert" />
     <None Include="shaders\simple_shader.frag" />
     <None Include="shaders\simple_shader.vert" />
   </ItemGroup>

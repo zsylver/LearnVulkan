@@ -57,6 +57,9 @@
     <ClCompile Include="src\lve_descriptors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\point_light_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lve_window.hpp">
@@ -104,6 +107,9 @@
     <ClInclude Include="src\lve_descriptors.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\point_light_system.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\simple_shader.vert" />
@@ -111,5 +117,7 @@
     <None Include="shaders\compile.bat">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shaders\point_light.frag" />
+    <None Include="shaders\point_light.vert" />
   </ItemGroup>
 </Project>
