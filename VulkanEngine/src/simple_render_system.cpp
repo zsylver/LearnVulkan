@@ -26,11 +26,13 @@ namespace lve {
         CreatePipeline(renderPass);
     }
 
-    SimpleRenderSystem::~SimpleRenderSystem() {
+    SimpleRenderSystem::~SimpleRenderSystem() 
+    {
         vkDestroyPipelineLayout(m_lveDevice.Device(), m_pipelineLayout, nullptr);
     }
 
-    void SimpleRenderSystem::CreatePipelineLayout(VkDescriptorSetLayout globalSetLayout) {
+    void SimpleRenderSystem::CreatePipelineLayout(VkDescriptorSetLayout globalSetLayout)
+    {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
@@ -45,12 +47,14 @@ namespace lve {
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if (vkCreatePipelineLayout(m_lveDevice.Device(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) !=
-            VK_SUCCESS) {
+            VK_SUCCESS) 
+        {
             throw std::runtime_error("failed to create pipeline layout!");
         }
     }
 
-    void SimpleRenderSystem::CreatePipeline(VkRenderPass renderPass) {
+    void SimpleRenderSystem::CreatePipeline(VkRenderPass renderPass) 
+    {
         assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
         PipelineConfigInfo pipelineConfig{};

@@ -6,15 +6,18 @@
 #include <string>
 #include <vector>
 
-namespace lve {
+namespace lve 
+{
 
-    struct SwapChainSupportDetails {
+    struct SwapChainSupportDetails 
+    {
         VkSurfaceCapabilitiesKHR m_capabilities;
         std::vector<VkSurfaceFormatKHR> m_formats;
         std::vector<VkPresentModeKHR> m_presentModes;
     };
 
-    struct QueueFamilyIndices {
+    struct QueueFamilyIndices 
+    {
         uint32_t m_graphicsFamily;
         uint32_t m_presentFamily;
         bool m_graphicsFamilyHasValue = false;
@@ -22,7 +25,8 @@ namespace lve {
         bool isComplete() { return m_graphicsFamilyHasValue && m_presentFamilyHasValue; }
     };
 
-    class LveDevice {
+    class LveDevice 
+    {
     public:
 #ifdef NDEBUG
         const bool enableValidationLayers = false;
@@ -80,7 +84,7 @@ namespace lve {
         void CreateLogicalDevice();
         void CreateCommandPool();
 
-        // helper functions
+        // Helper functions
         bool IsDeviceSuitable(VkPhysicalDevice device);
         std::vector<const char*> GetRequiredExtensions();
         bool CheckValidationLayerSupport();

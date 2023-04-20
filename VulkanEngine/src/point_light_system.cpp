@@ -12,8 +12,8 @@
 #include <map>
 #include <stdexcept>
 
-namespace lve {
-
+namespace lve 
+{
     struct PointLightPushConstants 
     {
         glm::vec4 position{};
@@ -77,7 +77,8 @@ namespace lve {
     {
         auto rotateLight = glm::rotate(glm::mat4(1.f), 0.5f * frameInfo.m_frameTime, { 0.f, -1.f, 0.f });
         int lightIndex = 0;
-        for (auto& kv : frameInfo.m_gameObjects) {
+        for (auto& kv : frameInfo.m_gameObjects) 
+        {
             auto& obj = kv.second;
             if (obj.m_pointLight == nullptr) continue;
 

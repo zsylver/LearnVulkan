@@ -47,6 +47,7 @@
     <ClInclude Include="src\lve_renderer.hpp" />
     <ClInclude Include="src\lve_swap_chain.hpp" />
     <ClInclude Include="src\lve_pipeline.hpp" />
+    <ClInclude Include="src\lve_texture.hpp" />
     <ClInclude Include="src\lve_utils.hpp" />
     <ClInclude Include="src\lve_window.hpp" />
     <ClInclude Include="src\lve_device.hpp" />
@@ -138,7 +139,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;C:\Users\Admin\Documents\Projects\VulkanLearn\VulkanEngine\LearnVulkan\VulkanEngine\Libraries\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -156,7 +157,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;C:\Users\Admin\Documents\Projects\VulkanLearn\VulkanEngine\LearnVulkan\VulkanEngine\Libraries\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -174,7 +175,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;C:\Users\Admin\Documents\Projects\VulkanLearn\VulkanEngine\LearnVulkan\VulkanEngine\Libraries\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -192,7 +193,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;C:\Users\Admin\Documents\Projects\VulkanLearn\VulkanEngine\LearnVulkan\VulkanEngine\Libraries\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
