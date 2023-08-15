@@ -60,12 +60,18 @@ private:
 
 	//device setup
 	void CreateDevice();
+	void CreateSwapChain();
+	void RecreateSwapChain();
 
 	//pipeline setup
 	void CreatePipeline();
 
 	//final setup steps
 	void FinalSetup();
+	void CreateFrameBuffers();
+	void CreateFrameSyncObjects();
 
 	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+
+	void DestroySwapChain();
 };
