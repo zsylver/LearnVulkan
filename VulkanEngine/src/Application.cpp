@@ -5,11 +5,14 @@ Application::Application(int width, int height)
 	BuildGlfwWindow(width, height);
 
 	m_graphicsEngine = new Engine(width, height, m_window);
+
+	m_scene = new Scene();
 }
 
 Application::~Application() 
 {
 	delete m_graphicsEngine;
+	delete m_scene;
 }
 
 void Application::BuildGlfwWindow(int width, int height)
@@ -35,7 +38,7 @@ void Application::Run()
 	while (!glfwWindowShouldClose(m_window))
 	{
 		glfwPollEvents();
-		m_graphicsEngine->Render();
+		m_graphicsEngine->Render(m_scene);
 		CalculateFrameRate();
 	}
 }

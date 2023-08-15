@@ -23,6 +23,7 @@
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
@@ -45,6 +46,8 @@
     <ClInclude Include="src\Logging.h" />
     <ClInclude Include="src\Pipeline.h" />
     <ClInclude Include="src\QueueFamilies.h" />
+    <ClInclude Include="src\RenderStructs.h" />
+    <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\Shaders.h" />
     <ClInclude Include="src\SwapChain.h" />
     <ClInclude Include="src\Sync.h" />

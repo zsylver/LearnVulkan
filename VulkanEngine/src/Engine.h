@@ -2,6 +2,7 @@
 
 #include "Config.h"
 #include "Frame.h"
+#include "Scene.h"
 
 class Engine 
 {
@@ -11,7 +12,7 @@ public:
 	Engine(int width, int height, GLFWwindow* window);
 	~Engine();
 
-	void Render();
+	void Render(Scene* scene);
 private:
 
 	//whether to print debug messages in functions
@@ -66,5 +67,5 @@ private:
 	//final setup steps
 	void FinalSetup();
 
-	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
+	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 };

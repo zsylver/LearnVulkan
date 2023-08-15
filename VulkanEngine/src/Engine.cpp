@@ -132,7 +132,7 @@ void Engine::FinalSetup()
 	}
 }
 
-void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex) 
+void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) 
 {
 	vk::CommandBufferBeginInfo beginInfo{};
 
@@ -153,13 +153,23 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 	renderPassInfo.renderArea.offset.y = 0;
 	renderPassInfo.renderArea.extent = m_swapChainExtent;
 
-	vk::ClearValue clearColor{ std::array<float, 4>{1.0f, 0.5f, 0.25f, 1.0f} };
+	vk::ClearValue clearColor{ std::array<float, 4>{1.0f, 1.0f, 1.0f, 1.0f} };
 	renderPassInfo.clearValueCount = 1;
 	renderPassInfo.pClearValues = &clearColor;
 
 	commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
-	commandBuffer.draw(3, 1, 0, 0);
+
+	for (glm::vec3 position : scene->trianglePositions)
+	{
+		glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(0.1f, 0.1f, 0.1f));
+		model = glm::translate(model, position);
+		vkUtil::ObjectData objectData;
+		objectData.model = model;
+		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), & objectData);
+		commandBuffer.draw(3, 1, 0, 0);
+	}
+
 	commandBuffer.endRenderPass();
 
 	try 
@@ -175,7 +185,7 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 	}
 }
 
-void Engine::Render() 
+void Engine::Render(Scene* scene) 
 {
 	static_cast<void>(m_device.waitForFences(1, &(m_swapChainFrames[m_frameNumber].inFlight), VK_TRUE, UINT64_MAX));
 	static_cast<void>(m_device.resetFences(1, &(m_swapChainFrames[m_frameNumber].inFlight)));
@@ -187,7 +197,7 @@ void Engine::Render()
 
 	commandBuffer.reset();
 
-	RecordDrawCommands(commandBuffer, imageIndex);
+	RecordDrawCommands(commandBuffer, imageIndex, scene);
 
 	vk::SubmitInfo submitInfo{};
 
