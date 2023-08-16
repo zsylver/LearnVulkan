@@ -20,6 +20,7 @@ Engine::Engine(int width, int height, GLFWwindow* window)
 	CreateDevice();
 	CreatePipeline();
 	FinalSetup();
+	CreateAssets();
 }
 
 
@@ -52,6 +53,9 @@ Engine::~Engine()
 	m_device.destroyRenderPass(m_renderPass);
 
 	DestroySwapChain();
+
+	delete m_triangleMesh;
+
 	m_device.destroy();
 
 	m_instance.destroySurfaceKHR(m_surface);
@@ -165,6 +169,18 @@ void Engine::FinalSetup()
 	CreateFrameSyncObjects();
 }
 
+void Engine::CreateAssets()
+{
+	m_triangleMesh = new TriangleMesh(m_device, m_physicalDevice);
+}
+
+void Engine::PrepareScene(vk::CommandBuffer commandBuffer)
+{
+	vk::Buffer vertexBuffers[] = { m_triangleMesh->m_vertexBuffer.m_buffer };
+	vk::DeviceSize offsets[] = { 0 };
+	commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+}
+
 void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) 
 {
 	vk::CommandBufferBeginInfo beginInfo{};
@@ -193,10 +209,11 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 	commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
 
+	PrepareScene(commandBuffer);
+
 	for (glm::vec3 position : scene->trianglePositions)
 	{
-		glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(0.1f, 0.1f, 0.1f));
-		model = glm::translate(model, position);
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
 		vkUtil::ObjectData objectData;
 		objectData.model = model;
 		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), & objectData);
@@ -264,8 +281,6 @@ void Engine::Render(Scene* scene)
 	vk::Semaphore signalSemaphores[]{ m_swapChainFrames[m_frameNumber].renderFinished };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
-
-	
 
 	try 
 	{

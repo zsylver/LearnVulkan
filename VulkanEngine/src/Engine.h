@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "Frame.h"
 #include "Scene.h"
+#include "TriangleMesh.h"
 
 class Engine 
 {
@@ -55,6 +56,9 @@ private:
 	//Synchronization objects
 	int m_maxFramesInFlight, m_frameNumber;
 
+	//Asset pointers
+	TriangleMesh* m_triangleMesh;
+
 	//instance setup
 	void CreateInstance();
 
@@ -70,6 +74,9 @@ private:
 	void FinalSetup();
 	void CreateFrameBuffers();
 	void CreateFrameSyncObjects();
+
+	void CreateAssets();
+	void PrepareScene(vk::CommandBuffer commandBuffer);
 
 	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 

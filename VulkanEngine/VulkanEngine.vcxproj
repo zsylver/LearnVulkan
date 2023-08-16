@@ -23,7 +23,9 @@
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Memory.cpp" />
     <ClCompile Include="src\Scene.cpp" />
+    <ClCompile Include="src\TriangleMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
@@ -44,6 +46,8 @@
     <ClInclude Include="src\Framebuffer.h" />
     <ClInclude Include="src\Instance.h" />
     <ClInclude Include="src\Logging.h" />
+    <ClInclude Include="src\Memory.h" />
+    <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\Pipeline.h" />
     <ClInclude Include="src\QueueFamilies.h" />
     <ClInclude Include="src\RenderStructs.h" />
@@ -51,6 +55,7 @@
     <ClInclude Include="src\Shaders.h" />
     <ClInclude Include="src\SwapChain.h" />
     <ClInclude Include="src\Sync.h" />
+    <ClInclude Include="src\TriangleMesh.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

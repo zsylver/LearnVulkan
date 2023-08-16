@@ -30,3 +30,17 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+struct BufferInputChunk
+{
+	size_t m_size;
+	vk::BufferUsageFlags m_usage;
+	vk::Device m_logicalDevice;
+	vk::PhysicalDevice m_physicalDevice;
+};
+
+struct Buffer
+{
+	vk::Buffer m_buffer;
+	vk::DeviceMemory m_bufferMemory;
+};
