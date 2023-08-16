@@ -26,6 +26,8 @@
 #include <string>
 #include <optional>
 #include <fstream>
+#include <sstream>
+#include <unordered_map>
 #include <stdexcept>
 
 #include <glm/glm.hpp>
@@ -43,4 +45,12 @@ struct Buffer
 {
 	vk::Buffer m_buffer;
 	vk::DeviceMemory m_bufferMemory;
+};
+
+//--------- Assets -------------//
+enum class MeshTypes 
+{
+	TRIANGLE,
+	SQUARE,
+	STAR
 };

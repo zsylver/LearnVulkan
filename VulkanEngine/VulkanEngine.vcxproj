@@ -26,6 +26,7 @@
     <ClCompile Include="src\Memory.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\TriangleMesh.cpp" />
+    <ClCompile Include="src\VertexManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
@@ -56,6 +57,7 @@
     <ClInclude Include="src\SwapChain.h" />
     <ClInclude Include="src\Sync.h" />
     <ClInclude Include="src\TriangleMesh.h" />
+    <ClInclude Include="src\VertexManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

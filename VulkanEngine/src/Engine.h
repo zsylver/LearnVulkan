@@ -3,7 +3,7 @@
 #include "Config.h"
 #include "Frame.h"
 #include "Scene.h"
-#include "TriangleMesh.h"
+#include "VertexManager.h"
 
 class Engine 
 {
@@ -57,7 +57,7 @@ private:
 	int m_maxFramesInFlight, m_frameNumber;
 
 	//Asset pointers
-	TriangleMesh* m_triangleMesh;
+	VertexManager* m_meshes;
 
 	//instance setup
 	void CreateInstance();

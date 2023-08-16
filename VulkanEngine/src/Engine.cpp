@@ -54,7 +54,7 @@ Engine::~Engine()
 
 	DestroySwapChain();
 
-	delete m_triangleMesh;
+	delete m_meshes;
 
 	m_device.destroy();
 
@@ -182,12 +182,62 @@ void Engine::FinalSetup()
 
 void Engine::CreateAssets()
 {
-	m_triangleMesh = new TriangleMesh(m_device, m_physicalDevice);
+	m_meshes = new VertexManager();
+
+	std::vector<float> vertices = { {
+		 0.0f, -0.05f, 0.0f, 1.0f, 0.0f,
+		 0.05f, 0.05f, 0.0f, 1.0f, 0.0f,
+		-0.05f, 0.05f, 0.0f, 1.0f, 0.0f
+	} };
+	MeshTypes type = MeshTypes::TRIANGLE;
+	m_meshes->Consume(type, vertices);
+
+	vertices = { {
+		-0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
+		-0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
+		 0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
+		-0.05f,  0.05f, 1.0f, 0.0f, 0.0f
+	} };
+	type = MeshTypes::SQUARE;
+	m_meshes->Consume(type, vertices);
+
+	vertices = { {
+		-0.05f, -0.025f, 0.0f, 0.0f, 1.0f,
+		-0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
+		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		-0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
+		  0.0f,  -0.05f, 0.0f, 0.0f, 1.0f,
+		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
+		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		-0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
+		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
+		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
+		 0.05f, -0.025f, 0.0f, 0.0f, 1.0f,
+		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
+		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		 0.04f,   0.05f, 0.0f, 0.0f, 1.0f,
+		  0.0f,   0.01f, 0.0f, 0.0f, 1.0f,
+		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		  0.0f,   0.01f, 0.0f, 0.0f, 1.0f,
+		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
+		  0.0f,   0.01f, 0.0f, 0.0f, 1.0f,
+		-0.04f,   0.05f, 0.0f, 0.0f, 1.0f
+	} };
+	type = MeshTypes::STAR;
+	m_meshes->Consume(type, vertices);
+
+	m_meshes->Finalize(m_device, m_physicalDevice);
 }
 
 void Engine::PrepareScene(vk::CommandBuffer commandBuffer)
 {
-	vk::Buffer vertexBuffers[] = { m_triangleMesh->m_vertexBuffer.m_buffer };
+	vk::Buffer vertexBuffers[] = { m_meshes->m_vertexBuffer.m_buffer };
 	vk::DeviceSize offsets[] = { 0 };
 	commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
 }
@@ -222,13 +272,37 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 
 	PrepareScene(commandBuffer);
 
-	for (glm::vec3 position : scene->trianglePositions)
+	int vertexCount = m_meshes->m_sizes.find(MeshTypes::TRIANGLE)->second;
+	int firstVertex = m_meshes->m_offsets.find(MeshTypes::TRIANGLE)->second;
+	for (glm::vec3 position : scene->m_trianglePositions)
 	{
 		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
 		vkUtil::ObjectData objectData;
 		objectData.model = model;
-		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), & objectData);
-		commandBuffer.draw(3, 1, 0, 0);
+		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), &objectData);
+		commandBuffer.draw(vertexCount, 1, firstVertex, 0);
+	}
+
+	vertexCount = m_meshes->m_sizes.find(MeshTypes::SQUARE)->second;
+	firstVertex = m_meshes->m_offsets.find(MeshTypes::SQUARE)->second;
+	for (glm::vec3 position : scene->m_squarePositions)
+	{
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+		vkUtil::ObjectData objectData;
+		objectData.model = model;
+		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), &objectData);
+		commandBuffer.draw(vertexCount, 1, firstVertex, 0);
+	}
+
+	vertexCount = m_meshes->m_sizes.find(MeshTypes::STAR)->second;
+	firstVertex = m_meshes->m_offsets.find(MeshTypes::STAR)->second;
+	for (glm::vec3 position : scene->m_starPositions)
+	{
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+		vkUtil::ObjectData objectData;
+		objectData.model = model;
+		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), &objectData);
+		commandBuffer.draw(vertexCount, 1, firstVertex, 0);
 	}
 
 	commandBuffer.endRenderPass();
