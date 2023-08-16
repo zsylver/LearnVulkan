@@ -56,7 +56,7 @@ void vkUtil::AllocatedBufferMemory(Buffer& buffer, const BufferInputChunk& input
 	allocInfo.memoryTypeIndex = FindMemoryTypeIndex(
 		input.m_physicalDevice,
 		memoryRequirements.memoryTypeBits,
-		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		input.m_memoryProperties);
 
 	buffer.m_bufferMemory = input.m_logicalDevice.allocateMemory(allocInfo);
 	input.m_logicalDevice.bindBufferMemory(buffer.m_buffer, buffer.m_bufferMemory, 0);
@@ -88,4 +88,36 @@ Buffer vkUtil::CreateBuffer(BufferInputChunk input)
 	Buffer buffer{ input.m_logicalDevice.createBuffer(bufferInfo) };
 	AllocatedBufferMemory(buffer, input);
 	return buffer;
+}
+
+void vkUtil::CopyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, vk::DeviceSize size, vk::Queue queue, vk::CommandBuffer commandBuffer)
+{
+	commandBuffer.reset();
+
+	vk::CommandBufferBeginInfo beginInfo;
+	beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+	commandBuffer.begin(beginInfo);
+
+	/*
+	* // Provided by VK_VERSION_1_0
+		typedef struct VkBufferCopy 
+		{
+			VkDeviceSize    srcOffset;
+			VkDeviceSize    dstOffset;
+			VkDeviceSize    size;
+		} VkBufferCopy;
+	*/
+	vk::BufferCopy copyRegion;
+	copyRegion.srcOffset = 0;
+	copyRegion.dstOffset = 0;
+	copyRegion.size = size;
+	commandBuffer.copyBuffer(srcBuffer.m_buffer, dstBuffer.m_buffer, 1, &copyRegion);
+
+	commandBuffer.end();
+
+	vk::SubmitInfo submitInfo;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+	(void) queue.submit(1, &submitInfo, nullptr);
+	queue.waitIdle();
 }

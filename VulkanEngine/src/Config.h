@@ -39,6 +39,7 @@ struct BufferInputChunk
 	vk::BufferUsageFlags m_usage;
 	vk::Device m_logicalDevice;
 	vk::PhysicalDevice m_physicalDevice;
+	vk::MemoryPropertyFlags m_memoryProperties;
 };
 
 struct Buffer

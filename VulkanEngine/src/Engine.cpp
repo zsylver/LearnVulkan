@@ -137,7 +137,6 @@ void Engine::RecreateSwapChain()
 		glfwWaitEvents();
 	}
 
-
 	m_device.waitIdle();
 
 	DestroySwapChain();
@@ -232,7 +231,13 @@ void Engine::CreateAssets()
 	type = MeshTypes::STAR;
 	m_meshes->Consume(type, vertices);
 
-	m_meshes->Finalize(m_device, m_physicalDevice);
+	FinalizationChunk finalizationChunk;
+	finalizationChunk.m_logicalDevice = m_device;
+	finalizationChunk.m_physicalDevice = m_physicalDevice;
+	finalizationChunk.m_queue = m_graphicsQueue;
+	finalizationChunk.m_commandBuffer = m_mainCommandBuffer;
+
+	m_meshes->Finalize(finalizationChunk);
 }
 
 void Engine::PrepareScene(vk::CommandBuffer commandBuffer)

@@ -19,26 +19,34 @@ void VertexManager::Consume(MeshTypes type, std::vector<float> vertexData)
 	m_offset += vertexCount;
 }
 
-void VertexManager::Finalize(vk::Device logicalDevice, vk::PhysicalDevice physicalDevice) 
+void VertexManager::Finalize(const FinalizationChunk& finalizationChunk)
 {
-	m_logicalDevice = logicalDevice;
+	m_logicalDevice = finalizationChunk.m_logicalDevice;
 
 	BufferInputChunk inputChunk;
-	inputChunk.m_logicalDevice = logicalDevice;
-	inputChunk.m_physicalDevice = physicalDevice;
+	inputChunk.m_logicalDevice = finalizationChunk.m_logicalDevice;
+	inputChunk.m_physicalDevice = finalizationChunk.m_physicalDevice;
 	inputChunk.m_size = sizeof(float) * m_lump.size();
-	inputChunk.m_usage = vk::BufferUsageFlagBits::eVertexBuffer;
+	inputChunk.m_usage = vk::BufferUsageFlagBits::eTransferSrc;
+	inputChunk.m_memoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+	Buffer stagingBuffer = vkUtil::CreateBuffer(inputChunk);
 
+	void* memoryLocation = m_logicalDevice.mapMemory(stagingBuffer.m_bufferMemory, 0, inputChunk.m_size);
+	memcpy(memoryLocation, m_lump.data(), inputChunk.m_size);
+	m_logicalDevice.unmapMemory(stagingBuffer.m_bufferMemory);
+
+	inputChunk.m_usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
+	inputChunk.m_memoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal;
 	m_vertexBuffer = vkUtil::CreateBuffer(inputChunk);
 
-	void* memoryLocation = logicalDevice.mapMemory(m_vertexBuffer.m_bufferMemory, 0, inputChunk.m_size);
-	memcpy(memoryLocation, m_lump.data(), inputChunk.m_size);
-	logicalDevice.unmapMemory(m_vertexBuffer.m_bufferMemory);
+	vkUtil::CopyBuffer(stagingBuffer, m_vertexBuffer, inputChunk.m_size, finalizationChunk.m_queue, finalizationChunk.m_commandBuffer);
+
+	m_logicalDevice.destroyBuffer(stagingBuffer.m_buffer);
+	m_logicalDevice.freeMemory(stagingBuffer.m_bufferMemory);
 }
 
 VertexManager::~VertexManager() 
 {
 	m_logicalDevice.destroyBuffer(m_vertexBuffer.m_buffer);
 	m_logicalDevice.freeMemory(m_vertexBuffer.m_bufferMemory);
-
 }
