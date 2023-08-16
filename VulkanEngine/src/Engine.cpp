@@ -129,6 +129,17 @@ void Engine::CreateSwapChain()
 
 void Engine::RecreateSwapChain()
 {
+	m_width = 0;
+	m_height = 0;
+	while (m_width == 0 || m_height == 0)
+	{
+		glfwGetFramebufferSize(m_window, &m_width, &m_height);
+		glfwWaitEvents();
+	}
+
+
+	m_device.waitIdle();
+
 	DestroySwapChain();
 	CreateSwapChain();
 	CreateFrameBuffers();

@@ -24,7 +24,7 @@ void Application::BuildGlfwWindow(int width, int height)
 	//to the window later
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	//resizing breaks the swapchain, we'll disable it for now
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 	//GLFWwindow* glfwCreateWindow (int width, int height, const char *title, GLFWmonitor *monitor, GLFWwindow *share)
 	m_window = glfwCreateWindow(width, height, "LearnVulkanEngine", nullptr, nullptr);
