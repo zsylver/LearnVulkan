@@ -38,6 +38,10 @@ void Engine::DestroySwapChain()
 		m_device.unmapMemory(frame.cameraDataBuffer.m_bufferMemory);
 		m_device.freeMemory(frame.cameraDataBuffer.m_bufferMemory);
 		m_device.destroyBuffer(frame.cameraDataBuffer.m_buffer);
+
+		m_device.unmapMemory(frame.modelBuffer.m_bufferMemory);
+		m_device.freeMemory(frame.modelBuffer.m_bufferMemory);
+		m_device.destroyBuffer(frame.modelBuffer.m_buffer);
 	}
 
 	m_device.destroySwapchainKHR(m_swapChain);
@@ -112,9 +116,15 @@ void Engine::CreateDevice()
 void Engine::CreateDescriptorSetLayout()
 {
 	vkInit::DescriptorSetLayoutData bindings;
-	bindings.m_count = 1;
+	bindings.m_count = 2;
+
 	bindings.m_indices.push_back(0);
 	bindings.m_types.push_back(vk::DescriptorType::eUniformBuffer);
+	bindings.m_counts.push_back(1);
+	bindings.m_stages.push_back(vk::ShaderStageFlagBits::eVertex);
+
+	bindings.m_indices.push_back(1);
+	bindings.m_types.push_back(vk::DescriptorType::eStorageBuffer);
 	bindings.m_counts.push_back(1);
 	bindings.m_stages.push_back(vk::ShaderStageFlagBits::eVertex);
 
@@ -181,8 +191,9 @@ void Engine::CreateFrameBuffers()
 void Engine::CreateFrameResources()
 {
 	vkInit::DescriptorSetLayoutData bindings;
-	bindings.m_count = 1;
+	bindings.m_count = 2;
 	bindings.m_types.push_back(vk::DescriptorType::eUniformBuffer);
+	bindings.m_types.push_back(vk::DescriptorType::eStorageBuffer);
 	m_descriptorPool = vkInit::CreateDescriptorPool(m_device, static_cast<uint32_t>(m_swapChainFrames.size()), bindings);
 
 	for (vkUtil::SwapChainFrame& frame : m_swapChainFrames)
@@ -191,7 +202,7 @@ void Engine::CreateFrameResources()
 		frame.renderFinished = vkInit::CreateSemaphore(m_device, m_debugMode);
 		frame.inFlight = vkInit::CreateFence(m_device, m_debugMode);
 
-		frame.CreateUBOResources(m_device, m_physicalDevice);
+		frame.CreateDescriptorResources(m_device, m_physicalDevice);
 		frame.descriptorSet = vkInit::AllocateDescriptorSet(m_device, m_descriptorPool, m_descriptorSetLayout);
 	}
 }
@@ -278,8 +289,10 @@ void Engine::PrepareScene(vk::CommandBuffer commandBuffer)
 	commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
 }
 
-void Engine::PrepareFrame(uint32_t imageIndex)
+void Engine::PrepareFrame(uint32_t imageIndex, Scene* scene)
 {
+	vkUtil::SwapChainFrame& frame = m_swapChainFrames[imageIndex];
+
 	// TODO: Shift to a camera class
 	glm::vec3 eye = { 1.f, 0.f, -1.f };
 	glm::vec3 center = { 0.f, 0.f, 0.f };
@@ -289,12 +302,28 @@ void Engine::PrepareFrame(uint32_t imageIndex)
 
 	projection[1][1] *= -1;
 
-	m_swapChainFrames[imageIndex].cameraData.m_view = view;
-	m_swapChainFrames[imageIndex].cameraData.m_projection = projection;
-	m_swapChainFrames[imageIndex].cameraData.m_viewProjection = projection * view;
-	memcpy(m_swapChainFrames[imageIndex].cameraDataWriteLocation, &(m_swapChainFrames[imageIndex].cameraData), sizeof(vkUtil::UBO));
+	frame.cameraData.m_view = view;
+	frame.cameraData.m_projection = projection;
+	frame.cameraData.m_viewProjection = projection * view;
+	memcpy(frame.cameraDataWriteLocation, &(frame.cameraData), sizeof(vkUtil::UBO));
 
-	m_swapChainFrames[imageIndex].WriteDescriptorSet(m_device);
+	size_t i = 0;
+	for (glm::vec3& position : scene->m_trianglePositions)
+	{
+		frame.modelTransforms[i++] = glm::translate(glm::mat4(1.f), position);
+	}
+	for (glm::vec3& position : scene->m_squarePositions)
+	{
+		frame.modelTransforms[i++] = glm::translate(glm::mat4(1.f), position);
+	}
+	for (glm::vec3& position : scene->m_starPositions)
+	{
+		frame.modelTransforms[i++] = glm::translate(glm::mat4(1.f), position);
+	}
+
+	memcpy(frame.modelBufferWriteLocation, frame.modelTransforms.data(),i * sizeof(glm::mat4));
+
+	frame.WriteDescriptorSet(m_device);
 }
 
 void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) 
@@ -323,43 +352,29 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 	renderPassInfo.pClearValues = &clearColor;
 
 	commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
-	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, m_swapChainFrames[imageIndex].descriptorSet, nullptr);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);
+	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, m_swapChainFrames[imageIndex].descriptorSet, nullptr);
 
 	PrepareScene(commandBuffer);
 
 	int vertexCount = m_meshes->m_sizes.find(MeshTypes::TRIANGLE)->second;
 	int firstVertex = m_meshes->m_offsets.find(MeshTypes::TRIANGLE)->second;
-	for (glm::vec3 position : scene->m_trianglePositions)
-	{
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-		vkUtil::ObjectData objectData;
-		objectData.model = model;
-		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), &objectData);
-		commandBuffer.draw(vertexCount, 1, firstVertex, 0);
-	}
+	uint32_t startInstance = 0;
+	uint32_t instanceCount = static_cast<uint32_t>(scene->m_trianglePositions.size());
+	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
+	startInstance += instanceCount;
 
 	vertexCount = m_meshes->m_sizes.find(MeshTypes::SQUARE)->second;
 	firstVertex = m_meshes->m_offsets.find(MeshTypes::SQUARE)->second;
-	for (glm::vec3 position : scene->m_squarePositions)
-	{
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-		vkUtil::ObjectData objectData;
-		objectData.model = model;
-		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), &objectData);
-		commandBuffer.draw(vertexCount, 1, firstVertex, 0);
-	}
+	instanceCount = static_cast<uint32_t>(scene->m_squarePositions.size());
+	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
+	startInstance += instanceCount;
 
 	vertexCount = m_meshes->m_sizes.find(MeshTypes::STAR)->second;
 	firstVertex = m_meshes->m_offsets.find(MeshTypes::STAR)->second;
-	for (glm::vec3 position : scene->m_starPositions)
-	{
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-		vkUtil::ObjectData objectData;
-		objectData.model = model;
-		commandBuffer.pushConstants(m_pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), &objectData);
-		commandBuffer.draw(vertexCount, 1, firstVertex, 0);
-	}
+	instanceCount = static_cast<uint32_t>(scene->m_starPositions.size());
+	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
+	startInstance += instanceCount;
 
 	commandBuffer.endRenderPass();
 
@@ -406,7 +421,7 @@ void Engine::Render(Scene* scene)
 
 	commandBuffer.reset();
 
-	PrepareFrame(imageIndex);
+	PrepareFrame(imageIndex, scene);
 
 	RecordDrawCommands(commandBuffer, imageIndex, scene);
 

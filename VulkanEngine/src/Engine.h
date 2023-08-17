@@ -82,7 +82,7 @@ private:
 
 	void CreateAssets();
 	void PrepareScene(vk::CommandBuffer commandBuffer);
-	void PrepareFrame(uint32_t imageIndex);
+	void PrepareFrame(uint32_t imageIndex, Scene* scene);
 
 	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 

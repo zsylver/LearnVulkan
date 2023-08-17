@@ -44,12 +44,8 @@ namespace vkInit
 		layoutInfo.setLayoutCount = 1;
 		layoutInfo.pSetLayouts = &layout;
 
-		layoutInfo.pushConstantRangeCount = 1;
-		vk::PushConstantRange pushConstantInfo;
-		pushConstantInfo.offset = 0;
-		pushConstantInfo.size = sizeof(vkUtil::ObjectData);
-		pushConstantInfo.stageFlags = vk::ShaderStageFlagBits::eVertex;
-		layoutInfo.pPushConstantRanges = &pushConstantInfo;
+		layoutInfo.pushConstantRangeCount = 0;
+
 		try 
 		{
 			return device.createPipelineLayout(layoutInfo);

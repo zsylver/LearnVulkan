@@ -31,12 +31,16 @@ namespace vkUtil
 		UBO cameraData;
 		Buffer cameraDataBuffer;
 		void* cameraDataWriteLocation;
+		std::vector<glm::mat4> modelTransforms;
+		Buffer modelBuffer;
+		void* modelBufferWriteLocation;
 
 		// Resource descriptors
 		vk::DescriptorBufferInfo uniformBufferDescriptor;
+		vk::DescriptorBufferInfo modelBufferDescriptor;
 		vk::DescriptorSet descriptorSet;	
 
-		void CreateUBOResources(vk::Device logicalDevice, vk::PhysicalDevice physicalDevice)
+		void CreateDescriptorResources(vk::Device logicalDevice, vk::PhysicalDevice physicalDevice)
 		{
 			BufferInputChunk input;
 			input.m_logicalDevice = logicalDevice;
@@ -48,9 +52,23 @@ namespace vkUtil
 
 			cameraDataWriteLocation = logicalDevice.mapMemory(cameraDataBuffer.m_bufferMemory, 0, sizeof(UBO));
 
+			input.m_size = 1024 * sizeof(glm::mat4);
+			input.m_usage = vk::BufferUsageFlagBits::eStorageBuffer;
+			modelBuffer = CreateBuffer(input);
+
+			modelBufferWriteLocation = logicalDevice.mapMemory(modelBuffer.m_bufferMemory, 0, 1024 * sizeof(glm::mat4));
+
+			modelTransforms.reserve(1024);
+			for (int i = 0; i < 1024; ++i)
+				modelTransforms.push_back(glm::mat4(1.f));
+
 			uniformBufferDescriptor.buffer = cameraDataBuffer.m_buffer;
 			uniformBufferDescriptor.offset = 0;
 			uniformBufferDescriptor.range = sizeof(UBO);
+
+			modelBufferDescriptor.buffer = modelBuffer.m_buffer;
+			modelBufferDescriptor.offset = 0;
+			modelBufferDescriptor.range = 1024 * sizeof(glm::mat4);
 		}
 
 		void WriteDescriptorSet(vk::Device device)
@@ -65,6 +83,16 @@ namespace vkUtil
 			writeInfo.pBufferInfo = &uniformBufferDescriptor;
 
 			device.updateDescriptorSets(writeInfo, nullptr);
+
+			vk::WriteDescriptorSet writeInfo2;
+			writeInfo2.dstSet = descriptorSet;
+			writeInfo2.dstBinding = 1;
+			writeInfo2.dstArrayElement = 0;
+			writeInfo2.descriptorCount = 1;
+			writeInfo2.descriptorType = vk::DescriptorType::eStorageBuffer;
+			writeInfo2.pBufferInfo = &modelBufferDescriptor;
+
+			device.updateDescriptorSets(writeInfo2, nullptr);
 		}
 	};
 
