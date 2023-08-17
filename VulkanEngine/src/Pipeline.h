@@ -16,6 +16,7 @@ namespace vkInit
 		std::string fragmentFilepath;
 		vk::Extent2D swapchainExtent;
 		vk::Format swapchainImageFormat;
+		vk::DescriptorSetLayout descriptorSetLayout;
 	};
 
 	/**
@@ -36,13 +37,12 @@ namespace vkInit
 		\param debug whether the system is running in debug mode
 		\returns the created pipeline layout
 	*/
-	vk::PipelineLayout CreatePipelineLayout(vk::Device device, bool debug) 
+	vk::PipelineLayout CreatePipelineLayout(vk::Device device, vk::DescriptorSetLayout layout) 
 	{
-		(void)debug;
-
 		vk::PipelineLayoutCreateInfo layoutInfo;
 		layoutInfo.flags = vk::PipelineLayoutCreateFlags();
-		layoutInfo.setLayoutCount = 0;
+		layoutInfo.setLayoutCount = 1;
+		layoutInfo.pSetLayouts = &layout;
 
 		layoutInfo.pushConstantRangeCount = 1;
 		vk::PushConstantRange pushConstantInfo;
@@ -68,9 +68,8 @@ namespace vkInit
 		\param debug whether the system is running in debug mode
 		\returns the created renderpass
 	*/
-	vk::RenderPass CreateRenderPass(vk::Device device, vk::Format swapchainImageFormat, bool debug) 
+	vk::RenderPass CreateRenderPass(vk::Device device, vk::Format swapchainImageFormat) 
 	{
-		(void)debug;
 
 		//Define a general attachment, with its load/store operations
 		vk::AttachmentDescription colorAttachment = {};
@@ -236,14 +235,14 @@ namespace vkInit
 		if (debug)
 			std::cout << "Create Pipeline Layout" << std::endl;
 	
-		vk::PipelineLayout pipelineLayout = CreatePipelineLayout(specification.device, debug);
+		vk::PipelineLayout pipelineLayout = CreatePipelineLayout(specification.device, specification.descriptorSetLayout);
 		pipelineInfo.layout = pipelineLayout;
 
 		//Renderpass
 		if (debug)
 			std::cout << "Create RenderPass" << std::endl;
 
-		vk::RenderPass renderpass = CreateRenderPass(specification.device, specification.swapchainImageFormat, debug);
+		vk::RenderPass renderpass = CreateRenderPass(specification.device, specification.swapchainImageFormat);
 		pipelineInfo.renderPass = renderpass;
 		pipelineInfo.subpass = 0;
 

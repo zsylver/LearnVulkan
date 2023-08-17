@@ -40,6 +40,7 @@
   <ItemGroup>
     <ClInclude Include="src\Commands.h" />
     <ClInclude Include="src\Config.h" />
+    <ClInclude Include="src\Descriptors.h" />
     <ClInclude Include="src\Device.h" />
     <ClInclude Include="src\Engine.h" />
     <ClInclude Include="src\Frame.h" />

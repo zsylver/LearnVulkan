@@ -56,27 +56,33 @@ private:
 	//Synchronization objects
 	int m_maxFramesInFlight, m_frameNumber;
 
+	//Descriptor objects
+	vk::DescriptorSetLayout m_descriptorSetLayout;
+	vk::DescriptorPool m_descriptorPool;
+
 	//Asset pointers
 	VertexManager* m_meshes;
 
-	//instance setup
+	//Instance setup
 	void CreateInstance();
 
-	//device setup
+	//Device setup
 	void CreateDevice();
 	void CreateSwapChain();
 	void RecreateSwapChain();
 
-	//pipeline setup
+	//Pipeline setup
+	void CreateDescriptorSetLayout();
 	void CreatePipeline();
 
-	//final setup steps
+	//Final setup steps
 	void FinalSetup();
 	void CreateFrameBuffers();
-	void CreateFrameSyncObjects();
+	void CreateFrameResources();
 
 	void CreateAssets();
 	void PrepareScene(vk::CommandBuffer commandBuffer);
+	void PrepareFrame(uint32_t imageIndex);
 
 	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 
