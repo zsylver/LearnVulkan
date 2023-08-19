@@ -198,7 +198,7 @@ vk::PipelineRasterizationStateCreateInfo vkInit::CreateRasterizerInfo()
 	rasterizer.polygonMode = vk::PolygonMode::eFill;
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
-	rasterizer.frontFace = vk::FrontFace::eClockwise;
+	rasterizer.frontFace = vk::FrontFace::eCounterClockwise;
 	rasterizer.depthBiasEnable = VK_FALSE; //Depth bias can be useful in shadow maps.
 
 	return rasterizer;
@@ -220,10 +220,10 @@ vk::PipelineColorBlendAttachmentState vkInit::CreateColorBlendAttachmentState()
 	colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
 	colorBlendAttachment.blendEnable = VK_TRUE;
 	colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
-	colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+	colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusDstAlpha;
 	colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
 	colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eSrcAlpha;
-	colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+	colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eOneMinusDstAlpha;
 	colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
 
 	return colorBlendAttachment;

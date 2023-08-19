@@ -32,6 +32,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 struct BufferInputChunk
 {
@@ -51,9 +52,10 @@ struct Buffer
 //--------- Assets -------------//
 enum class MeshTypes 
 {
-	TRIANGLE,
-	SQUARE,
-	STAR
+	GROUND,
+	GIRL,
+	SKULL,
+	ROOM
 };
 
 std::vector<std::string> Split(std::string line, std::string delimiter);

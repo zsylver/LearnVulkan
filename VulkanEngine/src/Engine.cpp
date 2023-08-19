@@ -8,6 +8,7 @@
 #include "Commands.h"
 #include "Sync.h"
 #include "Descriptors.h"
+#include "ObjMesh.h"
 
 Engine::Engine(int width, int height, GLFWwindow* window)
 	: m_width{ width },
@@ -238,64 +239,27 @@ void Engine::FinalSetup()
 void Engine::CreateAssets()
 {
 	m_meshes = new VertexManager();
+	std::unordered_map<MeshTypes, std::vector<const char*>> modelFilenames =
+	{
+		{MeshTypes::GROUND, {"./models/ground.obj","./models/ground.mtl"}},
+		{MeshTypes::GIRL, {"./models/girl.obj","none"}},
+		{MeshTypes::SKULL, {"./models/skull.obj","./models/skull.mtl"}},
+		{MeshTypes::ROOM, {"./models/viking_room.obj", "none"}}
+	};
 
-	std::vector<float> vertices = 
-	{ {
-		 0.0f, -0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f, 0.0f, //0
-		 0.1f,  0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, //1
-		-0.1f,  0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  //2
-	} };
+	std::unordered_map<MeshTypes, glm::mat4> preTransforms =
+	{
+		{MeshTypes::GROUND, glm::mat4(1.f)},
+		{MeshTypes::GIRL, glm::rotate(glm::mat4(1.f), glm::radians(180.f), glm::vec3(0.f, 0.f, 1.f))},
+		{MeshTypes::SKULL, glm::mat4(1.f)},
+		{MeshTypes::ROOM, glm::rotate(glm::mat4(1.f), glm::radians(135.f), glm::vec3(0.f, 0.f, 1.f))}
+	};
 
-	std::vector<uint32_t> indices = 
-	{ {
-		0, 1, 2
-	} };
-	MeshTypes type = MeshTypes::TRIANGLE;
-	m_meshes->Consume(type, vertices, indices);
-
-	vertices = 
-	{ {
-		-0.1f,  0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, //0
-		-0.1f, -0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, //1
-		 0.1f, -0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, //2
-		 0.1f,  0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, //3
-	} };
-
-	indices =
-	{ {
-		0, 1, 2,
-		2, 3, 0
-	} };
-	type = MeshTypes::SQUARE;
-	m_meshes->Consume(type, vertices, indices);
-
-	vertices = 
-	{ {
-		 -0.1f, -0.05f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.25f, //0
-		-0.04f, -0.05f, 0.0f, 1.0f, 1.0f, 1.0f, 0.3f, 0.25f, //1
-		-0.06f,   0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.2f,  0.5f, //2
-		  0.0f,  -0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f,  0.0f, //3
-		 0.04f, -0.05f, 0.0f, 1.0f, 1.0f, 1.0f, 0.7f, 0.25f, //4
-		  0.1f, -0.05f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.25f, //5
-		 0.06f,   0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.8f,  0.5f, //6
-		 0.08f,   0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.9f,  1.0f, //7
-		  0.0f,  0.02f, 0.0f, 1.0f, 1.0f, 1.0f, 0.5f,  0.6f, //8
-		-0.08f,   0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 0.1f,  1.0f  //9
-	} };
-
-	indices = 
-	{ {
-		0, 1, 2,
-		1, 3, 4,
-		2, 1, 4,
-		4, 5, 6,
-		2, 4, 6,
-		6, 7, 8,
-		2, 6, 8,
-		2, 8, 9
-	} };
-	type = MeshTypes::STAR;
-	m_meshes->Consume(type, vertices, indices);
+	for (std::pair<MeshTypes, std::vector<const char*>> pair : modelFilenames)
+	{
+		vkMesh::ObjMesh model(preTransforms[pair.first], pair.second[0], pair.second[1]);
+		m_meshes->Consume(pair.first, model.m_vertices, model.m_indices);
+	}
 
 	FinalizationChunk finalizationChunk;
 	finalizationChunk.m_logicalDevice = m_device;
@@ -308,15 +272,17 @@ void Engine::CreateAssets()
 	//Materials
 	std::unordered_map<MeshTypes, const char*> filenames
 	{
-		{ MeshTypes::TRIANGLE, "./textures/noel.jpg" },
-		{ MeshTypes::SQUARE, "./textures/sy.png" },
-		{ MeshTypes::STAR, "./textures/MonkeyKing.png"}
+		{ MeshTypes::GROUND, "./textures/ground.jpg" },
+		{ MeshTypes::GIRL, "./textures/none.png" },
+		{ MeshTypes::SKULL, "./textures/skull.png"},
+		{ MeshTypes::ROOM, "./textures/viking_room.png"}
 	};
 
-	//Make a descriptor pool
+	//Make a descriptor pool to allocate sets
 	vkInit::DescriptorSetLayoutData bindings;
 	bindings.m_count = 1;
 	bindings.m_types.push_back(vk::DescriptorType::eCombinedImageSampler);
+
 	m_meshDescriptorPool = vkInit::CreateDescriptorPool(m_device, static_cast<uint32_t>(filenames.size()), bindings);
 
 
@@ -349,11 +315,11 @@ void Engine::PrepareFrame(uint32_t imageIndex, Scene* scene)
 	vkUtil::SwapChainFrame& frame = m_swapChainFrames[imageIndex];
 
 	// TODO: Shift to a camera class
-	glm::vec3 eye = { 1.f, 0.f, -1.f };
-	glm::vec3 center = { 0.f, 0.f, 0.f };
-	glm::vec3 up = { 0.f, 0.f, -1.f };
+	glm::vec3 eye = { 0.f, 0.f, 1.f };
+	glm::vec3 center = { 1.f, 0.f, 1.f };
+	glm::vec3 up = { 0.f, 0.f, 1.f };
 	glm::mat4 view = glm::lookAt(eye, center, up);
-	glm::mat4 projection = glm::perspective(glm::radians(45.f), static_cast<float>(m_swapChainExtent.width) / static_cast<float>(m_swapChainExtent.height), 0.1f, 10.f);
+	glm::mat4 projection = glm::perspective(glm::radians(45.f), static_cast<float>(m_swapChainExtent.width) / static_cast<float>(m_swapChainExtent.height), 0.1f, 100.f);
 
 	projection[1][1] *= -1;
 
@@ -363,17 +329,12 @@ void Engine::PrepareFrame(uint32_t imageIndex, Scene* scene)
 	memcpy(frame.cameraDataWriteLocation, &(frame.cameraData), sizeof(vkUtil::UBO));
 
 	size_t i = 0;
-	for (glm::vec3& position : scene->m_trianglePositions)
+	for (std::pair<MeshTypes, std::vector<glm::vec3>> pair : scene->m_positions) 
 	{
-		frame.modelTransforms[i++] = glm::translate(glm::mat4(1.f), position);
-	}
-	for (glm::vec3& position : scene->m_squarePositions)
-	{
-		frame.modelTransforms[i++] = glm::translate(glm::mat4(1.f), position);
-	}
-	for (glm::vec3& position : scene->m_starPositions)
-	{
-		frame.modelTransforms[i++] = glm::translate(glm::mat4(1.f), position);
+		for (glm::vec3& position : pair.second) 
+		{
+			frame.modelTransforms[i++] = glm::translate(glm::mat4(1.0f), position);
+		}
 	}
 
 	memcpy(frame.modelBufferWriteLocation, frame.modelTransforms.data(),i * sizeof(glm::mat4));
@@ -420,17 +381,10 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 
 	uint32_t startInstance = 0;
 
-	//Triangles
-	uint32_t instanceCount = static_cast<uint32_t>(scene->m_trianglePositions.size());
-	RenderObjects(commandBuffer, MeshTypes::TRIANGLE, startInstance, instanceCount);
-
-	//Squares
-	instanceCount = static_cast<uint32_t>(scene->m_squarePositions.size());
-	RenderObjects(commandBuffer, MeshTypes::SQUARE, startInstance, instanceCount);
-
-	//Stars
-	instanceCount = static_cast<uint32_t>(scene->m_starPositions.size());
-	RenderObjects(commandBuffer, MeshTypes::STAR, startInstance, instanceCount);
+	for (std::pair<MeshTypes, std::vector<glm::vec3>> pair : scene->m_positions)
+	{
+		RenderObjects(commandBuffer, pair.first, startInstance, static_cast<uint32_t>(pair.second.size()));
+	}
 
 	commandBuffer.endRenderPass();
 

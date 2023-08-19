@@ -28,10 +28,10 @@
     <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Memory.cpp" />
+    <ClCompile Include="src\ObjMesh.cpp" />
     <ClCompile Include="src\Pipeline.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\SingleTimeCommands.cpp" />
-    <ClCompile Include="src\TriangleMesh.cpp" />
     <ClCompile Include="src\VertexManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +57,7 @@
     <ClInclude Include="src\Logging.h" />
     <ClInclude Include="src\Memory.h" />
     <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\ObjMesh.h" />
     <ClInclude Include="src\Pipeline.h" />
     <ClInclude Include="src\QueueFamilies.h" />
     <ClInclude Include="src\RenderStructs.h" />
@@ -65,7 +66,6 @@
     <ClInclude Include="src\SingleTimeCommands.h" />
     <ClInclude Include="src\SwapChain.h" />
     <ClInclude Include="src\Sync.h" />
-    <ClInclude Include="src\TriangleMesh.h" />
     <ClInclude Include="src\VertexManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -147,7 +147,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -165,7 +165,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -183,7 +183,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -201,7 +201,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)VulkanEngine\Libraries\glfw-3.3.8.bin.WIN64\include;$(SolutionDir)VulkanEngine\Libraries\glm;C:\VulkanSDK\1.3.243.0\Include;$(SolutionDir)VulkanEngine\Libraries\tinyobjloader;$(SolutionDir)VulkanEngine\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
