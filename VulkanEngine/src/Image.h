@@ -23,6 +23,7 @@ namespace vkImage
 		vk::ImageTiling m_tiling;
 		vk::ImageUsageFlags m_usage;
 		vk::MemoryPropertyFlags m_memoryProperties;
+		vk::Format m_format;
 	};
 
 	struct ImageLayoutTransitionJob
@@ -91,5 +92,7 @@ namespace vkImage
 
 	void CopyBufferToImage(BufferImageCopyJob job);
 
-	vk::ImageView CreateImageView(vk::Device logicalDevice, vk::Image image, vk::Format format);
+	vk::ImageView CreateImageView(vk::Device logicalDevice, vk::Image image, vk::Format format, vk::ImageAspectFlags aspect);
+
+	vk::Format FindSupportedFormat(vk::PhysicalDevice physicalDevice, const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 }

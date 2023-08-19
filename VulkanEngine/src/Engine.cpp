@@ -27,21 +27,9 @@ Engine::Engine(int width, int height, GLFWwindow* window)
 
 void Engine::DestroySwapChain()
 {
-	for (const vkUtil::SwapChainFrame& frame : m_swapChainFrames)
+	for (vkUtil::SwapChainFrame& frame : m_swapChainFrames)
 	{
-		m_device.destroyImageView(frame.imageView);
-		m_device.destroyFramebuffer(frame.framebuffer);
-		m_device.destroyFence(frame.inFlight);
-		m_device.destroySemaphore(frame.imageAvailable);
-		m_device.destroySemaphore(frame.renderFinished);
-
-		m_device.unmapMemory(frame.cameraDataBuffer.m_bufferMemory);
-		m_device.freeMemory(frame.cameraDataBuffer.m_bufferMemory);
-		m_device.destroyBuffer(frame.cameraDataBuffer.m_buffer);
-
-		m_device.unmapMemory(frame.modelBuffer.m_bufferMemory);
-		m_device.freeMemory(frame.modelBuffer.m_bufferMemory);
-		m_device.destroyBuffer(frame.modelBuffer.m_buffer);
+		frame.Destroy();
 	}
 
 	m_device.destroySwapchainKHR(m_swapChain);
@@ -156,9 +144,10 @@ void Engine::CreatePipeline()
 	specification.fragmentFilepath = "shaders/fragment.spv";
 	specification.swapchainExtent = m_swapChainExtent;
 	specification.swapchainImageFormat = m_swapChainFormat;
-	specification.descriptorSetLayout = { m_frameSetLayout, m_meshSetLayout};
+	specification.depthFormat = m_swapChainFrames[0].depthFormat;
+	specification.descriptorSetLayouts = { m_frameSetLayout, m_meshSetLayout};
 
-	vkInit::GraphicsPipelineOutBundle output = vkInit::CreateGraphicsPipeline(specification, m_debugMode);
+	vkInit::GraphicsPipelineOutBundle output = vkInit::CreateGraphicsPipeline(specification);
 
 	m_pipelineLayout = output.layout;
 	m_renderPass = output.renderpass;
@@ -173,6 +162,16 @@ void Engine::CreateSwapChain()
 	m_swapChainFormat = bundle.format;
 	m_swapChainExtent = bundle.extent;
 	m_maxFramesInFlight = static_cast<int>(m_swapChainFrames.size());
+
+	for (vkUtil::SwapChainFrame& frame : m_swapChainFrames)
+	{
+		frame.logicalDevice = m_device;
+		frame.physicalDevice = m_physicalDevice;
+		frame.width = m_swapChainExtent.width;
+		frame.height = m_swapChainExtent.height;
+
+		frame.CreateDepthResources();
+	}
 }
 
 void Engine::RecreateSwapChain()
@@ -219,7 +218,7 @@ void Engine::CreateFrameResources()
 		frame.renderFinished = vkInit::CreateSemaphore(m_device, m_debugMode);
 		frame.inFlight = vkInit::CreateFence(m_device, m_debugMode);
 
-		frame.CreateDescriptorResources(m_device, m_physicalDevice);
+		frame.CreateDescriptorResources();
 		frame.descriptorSet = vkInit::AllocateDescriptorSet(m_device, m_frameDescriptorPool, m_frameSetLayout);
 	}
 }
@@ -242,9 +241,9 @@ void Engine::CreateAssets()
 
 	std::vector<float> vertices = 
 	{ {
-		 0.0f, -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f, //0
-		 0.1f,  0.1f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, //1
-		-0.1f,  0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f  //2
+		 0.0f, -0.1f, 1.0f, 1.0f, 1.0f, 0.5f, 0.0f, //0
+		 0.1f,  0.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, //1
+		-0.1f,  0.1f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  //2
 	} };
 
 	std::vector<uint32_t> indices = 
@@ -379,7 +378,7 @@ void Engine::PrepareFrame(uint32_t imageIndex, Scene* scene)
 
 	memcpy(frame.modelBufferWriteLocation, frame.modelTransforms.data(),i * sizeof(glm::mat4));
 
-	frame.WriteDescriptorSet(m_device);
+	frame.WriteDescriptorSet();
 }
 
 void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) 
@@ -403,9 +402,15 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 	renderPassInfo.renderArea.offset.y = 0;
 	renderPassInfo.renderArea.extent = m_swapChainExtent;
 
-	vk::ClearValue clearColor{ std::array<float, 4>{0.0f, 1.0f, 1.0f, 1.0f} };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
+	vk::ClearValue colorClear;
+	std::array<float, 4> colors = { 1.0f, 200.f / 255.f, 220.f / 255.f, 1.0f };
+	colorClear.color = vk::ClearColorValue(colors);
+	vk::ClearValue depthClear;
+
+	depthClear.depthStencil = vk::ClearDepthStencilValue({ 1.0f, 0 });
+	std::vector<vk::ClearValue> clearValues = { {colorClear, depthClear} };
+	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	renderPassInfo.pClearValues = clearValues.data();
 
 	commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline);

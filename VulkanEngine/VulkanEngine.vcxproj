@@ -22,10 +22,12 @@
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Descriptors.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Frame.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Memory.cpp" />
+    <ClCompile Include="src\Pipeline.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\SingleTimeCommands.cpp" />
     <ClCompile Include="src\TriangleMesh.cpp" />

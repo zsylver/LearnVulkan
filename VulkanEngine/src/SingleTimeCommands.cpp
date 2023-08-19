@@ -16,6 +16,6 @@ void vkUtil::EndJob(vk::CommandBuffer commandBuffer, vk::Queue submissionQueue)
 	vk::SubmitInfo submitInfo;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
-	submissionQueue.submit(1, &submitInfo, nullptr);
+	(void) submissionQueue.submit(1, &submitInfo, nullptr);
 	submissionQueue.waitIdle();
 }

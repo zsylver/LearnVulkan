@@ -22,6 +22,7 @@ vkImage::Texture::Texture(TextureInputChunk input) :
 	imageInput.m_physicalDevice = m_physicalDevice;
 	imageInput.m_width = m_width;
 	imageInput.m_height = m_height;
+	imageInput.m_format = vk::Format::eR8G8B8A8Unorm;
 	imageInput.m_tiling = vk::ImageTiling::eOptimal;
 	imageInput.m_usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
 	imageInput.m_memoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal;
@@ -101,7 +102,7 @@ void vkImage::Texture::Populate()
 
 void vkImage::Texture::CreateView() 
 {
-	m_imageView = CreateImageView(m_logicalDevice, m_image, vk::Format::eR8G8B8A8Unorm);
+	m_imageView = CreateImageView(m_logicalDevice, m_image, vk::Format::eR8G8B8A8Unorm, vk::ImageAspectFlagBits::eColor);
 }
 
 void vkImage::Texture::CreateSampler() {
@@ -213,7 +214,7 @@ vk::Image vkImage::CreateImage(ImageInputChunk input)
 	imageInfo.extent = vk::Extent3D(input.m_width, input.m_height, 1);
 	imageInfo.mipLevels = 1;
 	imageInfo.arrayLayers = 1;
-	imageInfo.format = vk::Format::eR8G8B8A8Unorm;
+	imageInfo.format = input.m_format;
 	imageInfo.tiling = input.m_tiling;
 	imageInfo.initialLayout = vk::ImageLayout::eUndefined;
 	imageInfo.usage = input.m_usage;
@@ -344,14 +345,14 @@ void vkImage::CopyBufferToImage(BufferImageCopyJob copyJob) {
 	copy.imageSubresource = access;
 
 	copy.imageOffset = vk::Offset3D(0, 0, 0);
-	copy.imageExtent = vk::Extent3D(copyJob.m_width, copyJob.m_height, 1.0f);
+	copy.imageExtent = vk::Extent3D(copyJob.m_width, copyJob.m_height, 1);
 
 	copyJob.m_commandBuffer.copyBufferToImage(copyJob.m_srcBuffer, copyJob.m_dstImage, vk::ImageLayout::eTransferDstOptimal, copy);
 
 	vkUtil::EndJob(copyJob.m_commandBuffer, copyJob.m_queue);
 }
 
-vk::ImageView vkImage::CreateImageView(vk::Device logicalDevice, vk::Image image, vk::Format format) 
+vk::ImageView vkImage::CreateImageView(vk::Device logicalDevice, vk::Image image, vk::Format format, vk::ImageAspectFlags aspect)
 {
 	/*
 	* ImageViewCreateInfo( VULKAN_HPP_NAMESPACE::ImageViewCreateFlags flags_ = {},
@@ -370,11 +371,40 @@ vk::ImageView vkImage::CreateImageView(vk::Device logicalDevice, vk::Image image
 	createInfo.components.g = vk::ComponentSwizzle::eIdentity;
 	createInfo.components.b = vk::ComponentSwizzle::eIdentity;
 	createInfo.components.a = vk::ComponentSwizzle::eIdentity;
-	createInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	createInfo.subresourceRange.aspectMask = aspect;
 	createInfo.subresourceRange.baseMipLevel = 0;
 	createInfo.subresourceRange.levelCount = 1;
 	createInfo.subresourceRange.baseArrayLayer = 0;
 	createInfo.subresourceRange.layerCount = 1;
 
 	return logicalDevice.createImageView(createInfo);
+}
+
+vk::Format vkImage::FindSupportedFormat(vk::PhysicalDevice physicalDevice, const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features)
+{
+	for (vk::Format format : candidates)
+	{
+		vk::FormatProperties properties = physicalDevice.getFormatProperties(format);
+
+		/*
+		typedef struct VkFormatProperties 
+		{
+			VkFormatFeatureFlags    linearTilingFeatures;
+			VkFormatFeatureFlags    optimalTilingFeatures;
+			VkFormatFeatureFlags    bufferFeatures;
+		} VkFormatProperties;
+		*/
+
+		if (tiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features) 
+		{
+			return format;
+		}
+
+		if (tiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features) 
+		{
+			return format;
+		}
+
+		std::runtime_error("Unable to find suitable format");
+	}
 }

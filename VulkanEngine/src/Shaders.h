@@ -10,11 +10,11 @@ namespace vkUtil
 		\param debug whether the system is running in debug mode
 		\returns the contents as a vector of raw binary characters
 	*/
-	std::vector<char> readFile(std::string filename, bool debug)
+	std::vector<char> readFile(std::string filename)
 	{
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
-		if (debug && !file.is_open()) 
+		if (!file.is_open()) 
 		{
 			std::cout << "Failed to load \"" << filename << "\"" << std::endl;
 		}
@@ -37,9 +37,9 @@ namespace vkUtil
 		\param debug whether the system is running in debug mode
 		\returns the created shader module
 	*/
-	vk::ShaderModule CreateModule(std::string filename, vk::Device device, bool debug)
+	vk::ShaderModule CreateModule(std::string filename, vk::Device device)
 	{
-		std::vector<char> sourceCode = readFile(filename, debug);
+		std::vector<char> sourceCode = readFile(filename);
 		vk::ShaderModuleCreateInfo moduleInfo = {};
 		moduleInfo.flags = vk::ShaderModuleCreateFlags();
 		moduleInfo.codeSize = sourceCode.size();
