@@ -10,9 +10,9 @@
 #include "Descriptors.h"
 
 Engine::Engine(int width, int height, GLFWwindow* window)
-	: m_width{width},
-	m_height{height},
-	m_window{window}
+	: m_width{ width },
+	m_height{ height },
+	m_window{ window }
 {
 	if (m_debugMode) 
 		std::cout << "Creating the graphics engine: LearnVulkanEngine\n";
@@ -240,53 +240,63 @@ void Engine::CreateAssets()
 {
 	m_meshes = new VertexManager();
 
-	std::vector<float> vertices = { {
-		 0.0f, -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f,
-		 0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-		-0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
+	std::vector<float> vertices = 
+	{ {
+		 0.0f, -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f, //0
+		 0.1f,  0.1f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, //1
+		-0.1f,  0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f  //2
+	} };
+
+	std::vector<uint32_t> indices = 
+	{ {
+		0, 1, 2
 	} };
 	MeshTypes type = MeshTypes::TRIANGLE;
-	m_meshes->Consume(type, vertices);
+	m_meshes->Consume(type, vertices, indices);
 
-	vertices = { {
-		-0.1f,  0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		-0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		 0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		 0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		 0.1f,  0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		-0.1f,  0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f
+	vertices = 
+	{ {
+		-0.1f,  0.1f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, //0
+		-0.1f, -0.1f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, //1
+		 0.1f, -0.1f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, //2
+		 0.1f,  0.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, //3
+	} };
+
+	indices =
+	{ {
+		0, 1, 2,
+		2, 3, 0
 	} };
 	type = MeshTypes::SQUARE;
-	m_meshes->Consume(type, vertices);
+	m_meshes->Consume(type, vertices, indices);
 
-	vertices = { {
-		 -0.1f, -0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.25f,
-		-0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
-		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
-		-0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
-		  0.0f,  -0.1f, 0.0f, 0.0f, 1.0f, 0.5f,  0.0f,
-		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
-		-0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
-		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-		  0.1f, -0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 0.25f,
-		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
-		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
-		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
-		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
-		 0.08f,   0.1f, 0.0f, 0.0f, 1.0f, 0.9f,  1.0f,
-		  0.0f,  0.02f, 0.0f, 0.0f, 1.0f, 0.5f,  0.6f,
-		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
-		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
-		  0.0f,  0.02f, 0.0f, 0.0f, 1.0f, 0.5f,  0.6f,
-		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
-		  0.0f,  0.02f, 0.0f, 0.0f, 1.0f, 0.5f,  0.6f,
-		-0.08f,   0.1f, 0.0f, 0.0f, 1.0f, 0.1f,  1.0f
+	vertices = 
+	{ {
+		 -0.1f, -0.05f, 1.0f, 1.0f, 1.0f, 0.0f, 0.25f, //0
+		-0.04f, -0.05f, 1.0f, 1.0f, 1.0f, 0.3f, 0.25f, //1
+		-0.06f,   0.0f, 1.0f, 1.0f, 1.0f, 0.2f,  0.5f, //2
+		  0.0f,  -0.1f, 1.0f, 1.0f, 1.0f, 0.5f,  0.0f, //3
+		 0.04f, -0.05f, 1.0f, 1.0f, 1.0f, 0.7f, 0.25f, //4
+		  0.1f, -0.05f, 1.0f, 1.0f, 1.0f, 1.0f, 0.25f, //5
+		 0.06f,   0.0f, 1.0f, 1.0f, 1.0f, 0.8f,  0.5f, //6
+		 0.08f,   0.1f, 1.0f, 1.0f, 1.0f, 0.9f,  1.0f, //7
+		  0.0f,  0.02f, 1.0f, 1.0f, 1.0f, 0.5f,  0.6f, //8
+		-0.08f,   0.1f, 1.0f, 1.0f, 1.0f, 0.1f,  1.0f  //9
+	} };
+
+	indices = 
+	{ {
+		0, 1, 2,
+		1, 3, 4,
+		2, 1, 4,
+		4, 5, 6,
+		2, 4, 6,
+		6, 7, 8,
+		2, 6, 8,
+		2, 8, 9
 	} };
 	type = MeshTypes::STAR;
-	m_meshes->Consume(type, vertices);
+	m_meshes->Consume(type, vertices, indices);
 
 	FinalizationChunk finalizationChunk;
 	finalizationChunk.m_logicalDevice = m_device;
@@ -296,12 +306,12 @@ void Engine::CreateAssets()
 
 	m_meshes->Finalize(finalizationChunk);
 
-	//Materials //TODO: check file path
+	//Materials
 	std::unordered_map<MeshTypes, const char*> filenames
 	{
 		{ MeshTypes::TRIANGLE, "./textures/noel.jpg" },
-		{ MeshTypes::SQUARE, "./textures/MonkeyKing.png" },
-		{ MeshTypes::STAR, "./textures/lapu.png"}
+		{ MeshTypes::SQUARE, "./textures/sy.png" },
+		{ MeshTypes::STAR, "./textures/MonkeyKing.png"}
 	};
 
 	//Make a descriptor pool
@@ -332,6 +342,7 @@ void Engine::PrepareScene(vk::CommandBuffer commandBuffer)
 	vk::Buffer vertexBuffers[] = { m_meshes->m_vertexBuffer.m_buffer };
 	vk::DeviceSize offsets[] = { 0 };
 	commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+	commandBuffer.bindIndexBuffer(m_meshes->m_indexBuffer.m_buffer, 0, vk::IndexType::eUint32);
 }
 
 void Engine::PrepareFrame(uint32_t imageIndex, Scene* scene)
@@ -392,7 +403,7 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 	renderPassInfo.renderArea.offset.y = 0;
 	renderPassInfo.renderArea.extent = m_swapChainExtent;
 
-	vk::ClearValue clearColor{ std::array<float, 4>{1.0f, 1.0f, 1.0f, 1.0f} };
+	vk::ClearValue clearColor{ std::array<float, 4>{0.0f, 1.0f, 1.0f, 1.0f} };
 	renderPassInfo.clearValueCount = 1;
 	renderPassInfo.pClearValues = &clearColor;
 
@@ -433,10 +444,10 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 
 void Engine::RenderObjects(vk::CommandBuffer commandBuffer, MeshTypes objectType, uint32_t& startInstance, uint32_t instanceCount)
 {
-	int vertexCount = m_meshes->m_sizes.find(objectType)->second;
-	int firstVertex = m_meshes->m_offsets.find(objectType)->second;
+	int indexCount = m_meshes->m_indexCounts.find(objectType)->second;
+	int firstIndex = m_meshes->m_firstIndices.find(objectType)->second;
 	m_materials[objectType]->Use(commandBuffer, m_pipelineLayout);
-	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
+	commandBuffer.drawIndexed(indexCount, instanceCount, firstIndex, 0, startInstance);
 	startInstance += instanceCount;
 }
 

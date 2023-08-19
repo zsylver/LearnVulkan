@@ -15,13 +15,14 @@ class VertexManager
 public:
 	VertexManager();
 	~VertexManager();
-	void Consume(MeshTypes type, std::vector<float> vertexData);
+	void Consume(MeshTypes type, std::vector<float>& vertexData, std::vector<uint32_t>& indexData);
 	void Finalize(const FinalizationChunk& finalizationChunk);
-	Buffer m_vertexBuffer;
-	std::unordered_map<MeshTypes, int> m_offsets;
-	std::unordered_map<MeshTypes, int> m_sizes;
+	Buffer m_vertexBuffer, m_indexBuffer;
+	std::unordered_map<MeshTypes, int> m_firstIndices;
+	std::unordered_map<MeshTypes, int> m_indexCounts;
 private:
-	int m_offset;
+	int m_indexOffset;
 	vk::Device m_logicalDevice;
-	std::vector<float> m_lump;
+	std::vector<float> m_vertexLump;
+	std::vector<uint32_t> m_indexLump;
 };
