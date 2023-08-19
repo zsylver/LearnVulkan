@@ -19,47 +19,51 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\first_app.cpp" />
-    <ClCompile Include="src\keyboard_movement_controller.cpp" />
-    <ClCompile Include="src\lve_buffer.cpp" />
-    <ClCompile Include="src\lve_camera.cpp" />
-    <ClCompile Include="src\lve_descriptors.cpp" />
-    <ClCompile Include="src\lve_game_object.cpp" />
-    <ClCompile Include="src\lve_model.cpp" />
-    <ClCompile Include="src\lve_renderer.cpp" />
-    <ClCompile Include="src\lve_swap_chain.cpp" />
-    <ClCompile Include="src\lve_pipeline.cpp" />
-    <ClCompile Include="src\lve_window.cpp" />
+    <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\Descriptors.cpp" />
+    <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Image.cpp" />
+    <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\lve_device.cpp" />
-    <ClCompile Include="src\point_light_system.cpp" />
-    <ClCompile Include="src\simple_render_system.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\first_app.hpp" />
-    <ClInclude Include="src\keyboard_movement_controller.hpp" />
-    <ClInclude Include="src\lve_buffer.hpp" />
-    <ClInclude Include="src\lve_camera.hpp" />
-    <ClInclude Include="src\lve_descriptors.hpp" />
-    <ClInclude Include="src\lve_frame_info.hpp" />
-    <ClInclude Include="src\lve_game_object.hpp" />
-    <ClInclude Include="src\lve_model.hpp" />
-    <ClInclude Include="src\lve_renderer.hpp" />
-    <ClInclude Include="src\lve_swap_chain.hpp" />
-    <ClInclude Include="src\lve_pipeline.hpp" />
-    <ClInclude Include="src\lve_texture.hpp" />
-    <ClInclude Include="src\lve_utils.hpp" />
-    <ClInclude Include="src\lve_window.hpp" />
-    <ClInclude Include="src\lve_device.hpp" />
-    <ClInclude Include="src\point_light_system.hpp" />
-    <ClInclude Include="src\simple_render_system.hpp" />
+    <ClCompile Include="src\Memory.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
+    <ClCompile Include="src\SingleTimeCommands.cpp" />
+    <ClCompile Include="src\TriangleMesh.cpp" />
+    <ClCompile Include="src\VertexManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
     <None Include="shaders\point_light.frag" />
     <None Include="shaders\point_light.vert" />
+    <None Include="shaders\shader.frag" />
+    <None Include="shaders\shader.vert" />
     <None Include="shaders\simple_shader.frag" />
     <None Include="shaders\simple_shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Commands.h" />
+    <ClInclude Include="src\Config.h" />
+    <ClInclude Include="src\Descriptors.h" />
+    <ClInclude Include="src\Device.h" />
+    <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\Frame.h" />
+    <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\Framebuffer.h" />
+    <ClInclude Include="src\Image.h" />
+    <ClInclude Include="src\Instance.h" />
+    <ClInclude Include="src\Logging.h" />
+    <ClInclude Include="src\Memory.h" />
+    <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\Pipeline.h" />
+    <ClInclude Include="src\QueueFamilies.h" />
+    <ClInclude Include="src\RenderStructs.h" />
+    <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\Shaders.h" />
+    <ClInclude Include="src\SingleTimeCommands.h" />
+    <ClInclude Include="src\SwapChain.h" />
+    <ClInclude Include="src\Sync.h" />
+    <ClInclude Include="src\TriangleMesh.h" />
+    <ClInclude Include="src\VertexManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -135,7 +139,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -151,7 +155,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -171,7 +175,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -187,7 +191,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
