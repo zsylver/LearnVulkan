@@ -59,7 +59,7 @@ vkInit::GraphicsPipelineOutBundle vkInit::CreateGraphicsPipeline(GraphicsPipelin
 	vk::PipelineShaderStageCreateInfo fragmentShaderInfo = CreateShaderInfo(fragmentShader, vk::ShaderStageFlagBits::eFragment);
 	shaderStages.push_back(fragmentShaderInfo);
 	//Now both shaders have been made, we can declare them to the pipeline info
-	pipelineInfo.stageCount = shaderStages.size();
+	pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 	pipelineInfo.pStages = shaderStages.data();
 
 	//Depth-Stencil
@@ -170,8 +170,8 @@ vk::Viewport vkInit::CreateViewport(const vkInit::GraphicsPipelineInBundle& spec
 vk::Rect2D vkInit::CreateScissor(const vkInit::GraphicsPipelineInBundle& specification)
 {
 	vk::Rect2D scissor = {};
-	scissor.offset.x = 0.0f;
-	scissor.offset.y = 0.0f;
+	scissor.offset.x = 0;
+	scissor.offset.y = 0;
 	scissor.extent = specification.swapchainExtent;
 
 	return scissor;
@@ -375,7 +375,7 @@ vk::RenderPassCreateInfo vkInit::CreateRenderPassInfo(
 {
 	vk::RenderPassCreateInfo renderpassInfo = {};
 	renderpassInfo.flags = vk::RenderPassCreateFlags();
-	renderpassInfo.attachmentCount = attachments.size();
+	renderpassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	renderpassInfo.pAttachments = attachments.data();
 	renderpassInfo.subpassCount = 1;
 	renderpassInfo.pSubpasses = &subpass;

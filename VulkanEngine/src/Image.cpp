@@ -407,4 +407,6 @@ vk::Format vkImage::FindSupportedFormat(vk::PhysicalDevice physicalDevice, const
 
 		std::runtime_error("Unable to find suitable format");
 	}
+
+	return vk::Format();
 }
