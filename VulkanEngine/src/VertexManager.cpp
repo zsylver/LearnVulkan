@@ -11,7 +11,7 @@ void VertexManager::Consume(MeshTypes type, std::vector<float> vertexData)
 	{
 		m_lump.push_back(attribute);
 	}
-	int vertexCount = static_cast<int>(vertexData.size() / 5);
+	int vertexCount = static_cast<int>(vertexData.size() / 7);
 
 	m_offsets.insert(std::make_pair(type, m_offset));
 	m_sizes.insert(std::make_pair(type, vertexCount));

@@ -4,6 +4,7 @@
 #include "Frame.h"
 #include "Scene.h"
 #include "VertexManager.h"
+#include "Image.h"
 
 class Engine 
 {
@@ -57,11 +58,14 @@ private:
 	int m_maxFramesInFlight, m_frameNumber;
 
 	//Descriptor objects
-	vk::DescriptorSetLayout m_descriptorSetLayout;
-	vk::DescriptorPool m_descriptorPool;
+	vk::DescriptorSetLayout m_frameSetLayout;
+	vk::DescriptorPool m_frameDescriptorPool;
+	vk::DescriptorSetLayout m_meshSetLayout;
+	vk::DescriptorPool m_meshDescriptorPool;
 
 	//Asset pointers
 	VertexManager* m_meshes;
+	std::unordered_map<MeshTypes, vkImage::Texture*> m_materials;
 
 	//Instance setup
 	void CreateInstance();
@@ -85,6 +89,7 @@ private:
 	void PrepareFrame(uint32_t imageIndex, Scene* scene);
 
 	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+	void RenderObjects(vk::CommandBuffer commandBuffer, MeshTypes objectType, uint32_t& startInstance, uint32_t instanceCount);
 
 	void DestroySwapChain();
 };

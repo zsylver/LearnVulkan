@@ -46,7 +46,7 @@ void Engine::DestroySwapChain()
 
 	m_device.destroySwapchainKHR(m_swapChain);
 
-	m_device.destroyDescriptorPool(m_descriptorPool);
+	m_device.destroyDescriptorPool(m_frameDescriptorPool);
 }
 
 Engine::~Engine() 
@@ -64,9 +64,17 @@ Engine::~Engine()
 
 	DestroySwapChain();
 
-	m_device.destroyDescriptorSetLayout(m_descriptorSetLayout);
+	m_device.destroyDescriptorSetLayout(m_frameSetLayout);
 
 	delete m_meshes;
+
+	for (const auto& [key, texture] : m_materials)
+	{
+		delete texture;
+	}
+
+	m_device.destroyDescriptorSetLayout(m_meshSetLayout);
+	m_device.destroyDescriptorPool(m_meshDescriptorPool);
 
 	m_device.destroy();
 
@@ -128,7 +136,16 @@ void Engine::CreateDescriptorSetLayout()
 	bindings.m_counts.push_back(1);
 	bindings.m_stages.push_back(vk::ShaderStageFlagBits::eVertex);
 
-	m_descriptorSetLayout = vkInit::CreateDescriptorSetLayout(m_device, bindings);
+	m_frameSetLayout = vkInit::CreateDescriptorSetLayout(m_device, bindings);
+
+	bindings.m_count = 1;
+
+	bindings.m_indices[0] = 0;
+	bindings.m_types[0] = vk::DescriptorType::eCombinedImageSampler;
+	bindings.m_counts[0] = 1;
+	bindings.m_stages[0] = vk::ShaderStageFlagBits::eFragment;
+
+	m_meshSetLayout = vkInit::CreateDescriptorSetLayout(m_device, bindings);
 }
 
 void Engine::CreatePipeline()
@@ -139,7 +156,7 @@ void Engine::CreatePipeline()
 	specification.fragmentFilepath = "shaders/fragment.spv";
 	specification.swapchainExtent = m_swapChainExtent;
 	specification.swapchainImageFormat = m_swapChainFormat;
-	specification.descriptorSetLayout = m_descriptorSetLayout;
+	specification.descriptorSetLayout = { m_frameSetLayout, m_meshSetLayout};
 
 	vkInit::GraphicsPipelineOutBundle output = vkInit::CreateGraphicsPipeline(specification, m_debugMode);
 
@@ -194,7 +211,7 @@ void Engine::CreateFrameResources()
 	bindings.m_count = 2;
 	bindings.m_types.push_back(vk::DescriptorType::eUniformBuffer);
 	bindings.m_types.push_back(vk::DescriptorType::eStorageBuffer);
-	m_descriptorPool = vkInit::CreateDescriptorPool(m_device, static_cast<uint32_t>(m_swapChainFrames.size()), bindings);
+	m_frameDescriptorPool = vkInit::CreateDescriptorPool(m_device, static_cast<uint32_t>(m_swapChainFrames.size()), bindings);
 
 	for (vkUtil::SwapChainFrame& frame : m_swapChainFrames)
 	{
@@ -203,7 +220,7 @@ void Engine::CreateFrameResources()
 		frame.inFlight = vkInit::CreateFence(m_device, m_debugMode);
 
 		frame.CreateDescriptorResources(m_device, m_physicalDevice);
-		frame.descriptorSet = vkInit::AllocateDescriptorSet(m_device, m_descriptorPool, m_descriptorSetLayout);
+		frame.descriptorSet = vkInit::AllocateDescriptorSet(m_device, m_frameDescriptorPool, m_frameSetLayout);
 	}
 }
 
@@ -224,49 +241,49 @@ void Engine::CreateAssets()
 	m_meshes = new VertexManager();
 
 	std::vector<float> vertices = { {
-		 0.0f, -0.05f, 0.0f, 1.0f, 0.0f,
-		 0.05f, 0.05f, 0.0f, 1.0f, 0.0f,
-		-0.05f, 0.05f, 0.0f, 1.0f, 0.0f
+		 0.0f, -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f,
+		 0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		-0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
 	} };
 	MeshTypes type = MeshTypes::TRIANGLE;
 	m_meshes->Consume(type, vertices);
 
 	vertices = { {
-		-0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
-		-0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
-		 0.05f,  0.05f, 1.0f, 0.0f, 0.0f,
-		-0.05f,  0.05f, 1.0f, 0.0f, 0.0f
+		-0.1f,  0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		-0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		 0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+		 0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+		 0.1f,  0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		-0.1f,  0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f
 	} };
 	type = MeshTypes::SQUARE;
 	m_meshes->Consume(type, vertices);
 
 	vertices = { {
-		-0.05f, -0.025f, 0.0f, 0.0f, 1.0f,
-		-0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
-		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		-0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
-		  0.0f,  -0.05f, 0.0f, 0.0f, 1.0f,
-		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
-		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		-0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
-		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
-		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
-		 0.05f, -0.025f, 0.0f, 0.0f, 1.0f,
-		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		 0.02f, -0.025f, 0.0f, 0.0f, 1.0f,
-		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		 0.04f,   0.05f, 0.0f, 0.0f, 1.0f,
-		  0.0f,   0.01f, 0.0f, 0.0f, 1.0f,
-		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		 0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		  0.0f,   0.01f, 0.0f, 0.0f, 1.0f,
-		-0.03f,    0.0f, 0.0f, 0.0f, 1.0f,
-		  0.0f,   0.01f, 0.0f, 0.0f, 1.0f,
-		-0.04f,   0.05f, 0.0f, 0.0f, 1.0f
+		 -0.1f, -0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.25f,
+		-0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
+		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
+		-0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
+		  0.0f,  -0.1f, 0.0f, 0.0f, 1.0f, 0.5f,  0.0f,
+		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
+		-0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
+		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+		  0.1f, -0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 0.25f,
+		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
+		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
+		 0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
+		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
+		 0.08f,   0.1f, 0.0f, 0.0f, 1.0f, 0.9f,  1.0f,
+		  0.0f,  0.02f, 0.0f, 0.0f, 1.0f, 0.5f,  0.6f,
+		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
+		 0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.8f,  0.5f,
+		  0.0f,  0.02f, 0.0f, 0.0f, 1.0f, 0.5f,  0.6f,
+		-0.06f,   0.0f, 0.0f, 0.0f, 1.0f, 0.2f,  0.5f,
+		  0.0f,  0.02f, 0.0f, 0.0f, 1.0f, 0.5f,  0.6f,
+		-0.08f,   0.1f, 0.0f, 0.0f, 1.0f, 0.1f,  1.0f
 	} };
 	type = MeshTypes::STAR;
 	m_meshes->Consume(type, vertices);
@@ -278,8 +295,36 @@ void Engine::CreateAssets()
 	finalizationChunk.m_commandBuffer = m_mainCommandBuffer;
 
 	m_meshes->Finalize(finalizationChunk);
-}
 
+	//Materials //TODO: check file path
+	std::unordered_map<MeshTypes, const char*> filenames
+	{
+		{ MeshTypes::TRIANGLE, "./textures/noel.jpg" },
+		{ MeshTypes::SQUARE, "./textures/MonkeyKing.png" },
+		{ MeshTypes::STAR, "./textures/lapu.png"}
+	};
+
+	//Make a descriptor pool
+	vkInit::DescriptorSetLayoutData bindings;
+	bindings.m_count = 1;
+	bindings.m_types.push_back(vk::DescriptorType::eCombinedImageSampler);
+	m_meshDescriptorPool = vkInit::CreateDescriptorPool(m_device, static_cast<uint32_t>(filenames.size()), bindings);
+
+
+	vkImage::TextureInputChunk textureInfo;
+	textureInfo.m_commandBuffer = m_mainCommandBuffer;
+	textureInfo.m_queue = m_graphicsQueue;
+	textureInfo.m_logicalDevice = m_device;
+	textureInfo.m_physicalDevice = m_physicalDevice;
+	textureInfo.m_layout = m_meshSetLayout;
+	textureInfo.m_descriptorPool = m_meshDescriptorPool;
+
+	for (const auto& [object, filename] : filenames)
+	{
+		textureInfo.m_filename = filename;
+		m_materials[object] = new vkImage::Texture(textureInfo);
+	}
+}
 
 
 void Engine::PrepareScene(vk::CommandBuffer commandBuffer)
@@ -357,24 +402,19 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 
 	PrepareScene(commandBuffer);
 
-	int vertexCount = m_meshes->m_sizes.find(MeshTypes::TRIANGLE)->second;
-	int firstVertex = m_meshes->m_offsets.find(MeshTypes::TRIANGLE)->second;
 	uint32_t startInstance = 0;
+
+	//Triangles
 	uint32_t instanceCount = static_cast<uint32_t>(scene->m_trianglePositions.size());
-	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
-	startInstance += instanceCount;
+	RenderObjects(commandBuffer, MeshTypes::TRIANGLE, startInstance, instanceCount);
 
-	vertexCount = m_meshes->m_sizes.find(MeshTypes::SQUARE)->second;
-	firstVertex = m_meshes->m_offsets.find(MeshTypes::SQUARE)->second;
+	//Squares
 	instanceCount = static_cast<uint32_t>(scene->m_squarePositions.size());
-	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
-	startInstance += instanceCount;
+	RenderObjects(commandBuffer, MeshTypes::SQUARE, startInstance, instanceCount);
 
-	vertexCount = m_meshes->m_sizes.find(MeshTypes::STAR)->second;
-	firstVertex = m_meshes->m_offsets.find(MeshTypes::STAR)->second;
+	//Stars
 	instanceCount = static_cast<uint32_t>(scene->m_starPositions.size());
-	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
-	startInstance += instanceCount;
+	RenderObjects(commandBuffer, MeshTypes::STAR, startInstance, instanceCount);
 
 	commandBuffer.endRenderPass();
 
@@ -386,10 +426,20 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 	{
 		if (m_debugMode) 
 		{
-			std::cout << "failed to record command buffer!" << std::endl;
+			std::cout << "Failed to record command buffer!" << std::endl;
 		}
 	}
 }
+
+void Engine::RenderObjects(vk::CommandBuffer commandBuffer, MeshTypes objectType, uint32_t& startInstance, uint32_t instanceCount)
+{
+	int vertexCount = m_meshes->m_sizes.find(objectType)->second;
+	int firstVertex = m_meshes->m_offsets.find(objectType)->second;
+	m_materials[objectType]->Use(commandBuffer, m_pipelineLayout);
+	commandBuffer.draw(vertexCount, instanceCount, firstVertex, startInstance);
+	startInstance += instanceCount;
+}
+
 
 void Engine::Render(Scene* scene)
 {

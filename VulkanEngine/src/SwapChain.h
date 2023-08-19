@@ -3,6 +3,7 @@
 #include "Logging.h"
 #include "QueueFamilies.h"
 #include "Frame.h"
+#include "Image.h"
 
 namespace vkInit {
 
@@ -336,7 +337,7 @@ namespace vkInit {
 			imageViewCreateInfo.subresourceRange.layerCount = 1;
 
 			bundle.frames[i].image = images[i];
-			bundle.frames[i].imageView = logicalDevice.createImageView(imageViewCreateInfo);
+			bundle.frames[i].imageView = vkImage::CreateImageView(logicalDevice, images[i], format.format);
 		}
 
 		bundle.format = format.format;
