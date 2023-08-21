@@ -337,7 +337,7 @@ namespace vkInit {
 			imageViewCreateInfo.subresourceRange.layerCount = 1;
 
 			bundle.frames[i].image = images[i];
-			bundle.frames[i].imageView = vkImage::CreateImageView(logicalDevice, images[i], format.format, vk::ImageAspectFlagBits::eColor);
+			bundle.frames[i].imageView = vkImage::CreateImageView(logicalDevice, images[i], format.format, vk::ImageAspectFlagBits::eColor, vk::ImageViewType::e2D, 1);
 		}
 
 		bundle.format = format.format;

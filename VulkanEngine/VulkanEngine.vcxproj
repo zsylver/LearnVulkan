@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Config.cpp" />
+    <ClCompile Include="src\CubeMap.cpp" />
     <ClCompile Include="src\Descriptors.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Frame.cpp" />
@@ -32,6 +33,7 @@
     <ClCompile Include="src\Pipeline.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\SingleTimeCommands.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\VertexManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -42,10 +44,13 @@
     <None Include="shaders\shader.vert" />
     <None Include="shaders\simple_shader.frag" />
     <None Include="shaders\simple_shader.vert" />
+    <None Include="shaders\sky_shader.frag" />
+    <None Include="shaders\sky_shader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Commands.h" />
     <ClInclude Include="src\Config.h" />
+    <ClInclude Include="src\CubeMap.h" />
     <ClInclude Include="src\Descriptors.h" />
     <ClInclude Include="src\Device.h" />
     <ClInclude Include="src\Engine.h" />
@@ -66,6 +71,7 @@
     <ClInclude Include="src\SingleTimeCommands.h" />
     <ClInclude Include="src\SwapChain.h" />
     <ClInclude Include="src\Sync.h" />
+    <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\VertexManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

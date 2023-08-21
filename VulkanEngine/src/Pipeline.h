@@ -5,22 +5,9 @@
 namespace vkInit
 {
 	/**
-		holds the data structures used to create a pipeline
-	*/
-	struct GraphicsPipelineInBundle
-	{
-		vk::Device device;
-		std::string vertexFilepath;
-		std::string fragmentFilepath;
-		vk::Extent2D swapchainExtent;
-		vk::Format swapchainImageFormat, depthFormat;
-		std::vector<vk::DescriptorSetLayout> descriptorSetLayouts;
-	};
-
-	/**
-		Used for returning the pipeline, along with associated data structures,
-		after creation.
-	*/
+			Used for returning the pipeline, along with associated data structures,
+			after creation.
+		*/
 	struct GraphicsPipelineOutBundle
 	{
 		vk::PipelineLayout layout;
@@ -28,147 +15,185 @@ namespace vkInit
 		vk::Pipeline pipeline;
 	};
 
-	/**
-		Make a graphics pipeline, along with renderpass and pipeline layout
+	class PipelineBuilder 
+	{
+	public:
 
-		\param specification the struct holding input data, as specified at the top of the file.
-		\returns the bundle of data structures created
-	*/
-	GraphicsPipelineOutBundle CreateGraphicsPipeline(GraphicsPipelineInBundle& specification);
+		PipelineBuilder(vk::Device device);
+		~PipelineBuilder();
 
-	/**
-		Configure the vertex input stage.
+		void Reset();
 
-		\param bindingDescription describes the vertex inputs (ie. layouts)
-		\param attributeDescriptions describes the attributes
-		\returns the vertex input stage creation info
+		/**
+			Configure the vertex input stage.
 
-	*/
-	vk::PipelineVertexInputStateCreateInfo CreateVertexInputInfo(
-		const vk::VertexInputBindingDescription& bindingDescription,
-		const std::vector<vk::VertexInputAttributeDescription>& attributeDescriptions);
+			\param bindingDescription describes the vertex inputs (ie. layouts)
+			\param attributeDescriptions describes the attributes
+			\returns the vertex input stage creation info
 
-	/**
-		\returns the input assembly stage creation info
-	*/
-	vk::PipelineInputAssemblyStateCreateInfo CreateInputAssemblyInfo();
+		*/
+		void SpecifyVertexFormat(
+			vk::VertexInputBindingDescription bindingDescription,
+			std::vector<vk::VertexInputAttributeDescription> attributeDescriptions);
 
-	/**
-		Configure a programmable shader stage.
+		void SpecifyVertexShader(const char* filename);
 
-		\param shaderModule the compiled shader module
-		\param stage the shader stage which the module is for
-		\returns the shader stage creation info
-	*/
-	vk::PipelineShaderStageCreateInfo CreateShaderInfo(
-		const vk::ShaderModule& shaderModule, const vk::ShaderStageFlagBits& stage);
+		void SpecifyFragmentShader(const char* filename);
 
-	/**
-		Create a viewport.
+		void SpecifySwapChainExtent(vk::Extent2D screen_size);
 
-		\param specification holds relevant data fields
-		\returns the created viewport
-	*/
-	vk::Viewport CreateViewport(const GraphicsPipelineInBundle& specification);
+		void SpecifyDepthAttachment(const vk::Format& depthFormat, uint32_t attachment_index);
 
-	/**
-		Create a scissor rectangle.
+		void ClearDepthAttachment();
 
-		\param specification holds relevant data fields
-		\returns the created rectangle
-	*/
-	vk::Rect2D CreateScissor(const GraphicsPipelineInBundle& specification);
+		void AddColorAttachment(const vk::Format& format, uint32_t attachment_index);
 
-	/**
-		Configure the pipeline's viewport stage.
+		void SetOverwriteMode(bool mode);
 
-		\param viewport the viewport specification
-		\param scissor the scissor rectangle to apply
-		\returns the viewport state creation info
-	*/
-	vk::PipelineViewportStateCreateInfo CreateViewportState(const vk::Viewport& viewport, const vk::Rect2D& scissor);
+		/**
+			Make a graphics pipeline, along with renderpass and pipeline layout
 
-	/**
-		\returns the creation info for the configured rasterizer stage
-	*/
-	vk::PipelineRasterizationStateCreateInfo CreateRasterizerInfo();
+			\param specification the struct holding input data, as specified at the top of the file.
+			\returns the bundle of data structures created
+		*/
+		GraphicsPipelineOutBundle Build();
 
-	/**
-		\returns the creation info for the configured multisampling stage
-	*/
-	vk::PipelineMultisampleStateCreateInfo CreateMultisamplingInfo();
+		void AddDescriptorSetLayout(vk::DescriptorSetLayout descriptorSetLayout);
 
-	/**
-		\returns the created color blend state
-	*/
-	vk::PipelineColorBlendAttachmentState CreateColorBlendAttachmentState();
+		void ResetDescriptorSetLayouts();
 
-	/**
-		\returns the creation info for the configured color blend stage
-	*/
-	vk::PipelineColorBlendStateCreateInfo CreateColorBlendAttachmentStage(const vk::PipelineColorBlendAttachmentState& colorBlendAttachment);
+	private:
+		vk::Device device;
+		vk::GraphicsPipelineCreateInfo pipelineInfo = {};
 
-	/**
-		Make a pipeline layout, this consists mostly of describing the
-		push constants and descriptor set layouts which will be used.
+		vk::VertexInputBindingDescription bindingDescription;
+		std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
+		vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
+		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
 
-		\param device the logical device
-		\returns the created pipeline layout
-	*/
-	vk::PipelineLayout CreatePipelineLayout(vk::Device device, std::vector<vk::DescriptorSetLayout> descriptorSetLayouts);
+		std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+		vk::ShaderModule vertexShader = nullptr, fragmentShader = nullptr;
+		vk::PipelineShaderStageCreateInfo vertexShaderInfo, fragmentShaderInfo;
 
-	/**
-		Make a renderpass, a renderpass describes the subpasses involved
-		as well as the attachments which will be used.
+		vk::Extent2D swapchainExtent;
+		vk::Viewport viewport = {};
+		vk::Rect2D scissor = {};
+		vk::PipelineViewportStateCreateInfo viewportState = {};
 
-		\param device the logical device
-		\param swapchainImageFormat the image format chosen for the swapchain images
-		\returns the created renderpass
-	*/
-	vk::RenderPass CreateRenderPass(
-		vk::Device device, vk::Format swapchainImageFormat, vk::Format depthFormat
-	);
+		vk::PipelineRasterizationStateCreateInfo rasterizer = {};
 
-	/**
-		Make a color attachment description
+		vk::PipelineDepthStencilStateCreateInfo depthState;
+		std::unordered_map<uint32_t, vk::AttachmentDescription> attachmentDescriptions;
+		std::unordered_map<uint32_t, vk::AttachmentReference> attachmentReferences;
+		std::vector<vk::AttachmentDescription> flattenedAttachmentDescriptions;
+		std::vector<vk::AttachmentReference> flattenedAttachmentReferences;
 
-		\param swapchainImageFormat the image format used by the swapchain
-		\returns a description of the corresponding color attachment
-	*/
-	vk::AttachmentDescription CreateColorAttachment(const vk::Format& swapchainImageFormat);
+		vk::PipelineMultisampleStateCreateInfo multisampling = {};
 
-	/**
-		\returns Make a color attachment refernce
-	*/
-	vk::AttachmentReference CreateColorAttachmentReference();
+		vk::PipelineColorBlendAttachmentState colorBlendAttachment = {};
+		vk::PipelineColorBlendStateCreateInfo colorBlending = {};
 
-	/**
-		Make a depth attachment description
+		std::vector<vk::DescriptorSetLayout> descriptorSetLayouts;
+		bool overwrite;
 
-		\param swapchainImageFormat the image format used by the swapchain
-		\returns a description of the corresponding depth attachment
-	*/
-	vk::AttachmentDescription CreateDepthAttachment(const vk::Format& depthFormat);
+		void ResetVertexFormat();
 
-	/**
-		\returns Make a depth attachment refernce
-	*/
-	vk::AttachmentReference CreateDepthAttachmentReference();
+		void ResetShaderModules();
 
-	/**
-		Make a simple subpass.
+		void ResetRenderPassAttachments();
 
-		\param colorAttachmentRef a reference to a color attachment for the color buffer
-		\returns a description of the subpass
-	*/
-	vk::SubpassDescription CreateSubpass(const std::vector<vk::AttachmentReference>& attachments);
+		/**
+			Make an attachment description
 
-	/**
-		Make a simple renderpass.
+			\param format the image format for the underlying resource
+			\param finalLayout the expected final layout after implicit transition (acquisition)
+			\returns a description of the corresponding attachment
+		*/
+		vk::AttachmentDescription CreateRenderPassAttachment(
+			const vk::Format& format, vk::AttachmentLoadOp loadOp,
+			vk::AttachmentStoreOp storeOp, vk::ImageLayout initialLayout, vk::ImageLayout finalLayout);
 
-		\param colorAttachment the color attachment for the color buffer
-		\param subpass a description of the subpass
-		\returns creation info for the renderpass
-	*/
-	vk::RenderPassCreateInfo CreateRenderPassInfo(const std::vector<vk::AttachmentDescription>& attachments,const vk::SubpassDescription& subpass);
+		/**
+			\returns Make a renderpass attachment reference
+		*/
+		vk::AttachmentReference CreateAttachmentReference(
+			uint32_t attachment_index, vk::ImageLayout layout);
+
+		/**
+			set up the input assembly stage
+		*/
+		void ConfigureInputAssembly();
+
+		/**
+			Configure a programmable shader stage.
+
+			\param shaderModule the compiled shader module
+			\param stage the shader stage which the module is for
+			\returns the shader stage creation info
+		*/
+		vk::PipelineShaderStageCreateInfo CreateShaderInfo(
+			const vk::ShaderModule& shaderModule, const vk::ShaderStageFlagBits& stage);
+
+		/**
+			Configure the pipeline's viewport stage.
+
+			\param viewport the viewport specification
+			\param scissor the scissor rectangle to apply
+			\returns the viewport state creation info
+		*/
+		vk::PipelineViewportStateCreateInfo CreateViewportState();
+
+		/**
+			sets the creation info for the configured rasterizer stage
+		*/
+		void CreateRasterizerInfo();
+
+		/**
+			configures the multisampling stage
+		*/
+		void ConfigureMultisampling();
+
+		/**
+			configures the color blending stage
+		*/
+		void ConfigureColorBlending();
+
+		/**
+			Make a pipeline layout, this consists mostly of describing the
+			push constants and descriptor set layouts which will be used.
+
+			\returns the created pipeline layout
+		*/
+		vk::PipelineLayout CreatePipelineLayout();
+
+		/**
+			Make a renderpass, a renderpass describes the subpasses involved
+			as well as the attachments which will be used.
+
+			\returns the created renderpass
+		*/
+		vk::RenderPass CreateRenderPass();
+
+		/**
+			Make a simple subpass.
+
+			\param colorAttachmentRef a reference to a color attachment for the color buffer
+			\returns a description of the subpass
+		*/
+		vk::SubpassDescription CreateSubpass(
+			const std::vector<vk::AttachmentReference>& attachments
+		);
+
+		/**
+			Make a simple renderpass.
+
+			\param colorAttachment the color attachment for the color buffer
+			\param subpass a description of the subpass
+			\returns creation info for the renderpass
+		*/
+		vk::RenderPassCreateInfo CreateRenderPassInfo(
+			const std::vector<vk::AttachmentDescription>& attachments,
+			const vk::SubpassDescription& subpass
+		);
+	};
 }

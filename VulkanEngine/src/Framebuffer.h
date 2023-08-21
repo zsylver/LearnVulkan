@@ -11,7 +11,7 @@ namespace vkInit
 	struct FramebufferInput 
 	{
 		vk::Device device;
-		vk::RenderPass renderPass;
+		std::unordered_map<PipelineTypes, vk::RenderPass> renderPass;
 		vk::Extent2D swapChainExtent;
 	};
 
@@ -27,30 +27,49 @@ namespace vkInit
 		{
 			std::vector<vk::ImageView> attachments
 			{
-				frames[i].imageView,
-				frames[i].depthBufferView
+				frames[i].imageView
 			};
 
 			vk::FramebufferCreateInfo framebufferInfo;
 			framebufferInfo.flags = vk::FramebufferCreateFlags();
-			framebufferInfo.renderPass = inputChunk.renderPass;
+			framebufferInfo.renderPass = inputChunk.renderPass[PipelineTypes::SKY];
 			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 			framebufferInfo.pAttachments = attachments.data();
 			framebufferInfo.width = inputChunk.swapChainExtent.width;
 			framebufferInfo.height = inputChunk.swapChainExtent.height;
 			framebufferInfo.layers = 1;
 
-			try 
+			try
 			{
-				frames[i].framebuffer = inputChunk.device.createFramebuffer(framebufferInfo);
+				frames[i].framebuffer[PipelineTypes::SKY] = inputChunk.device.createFramebuffer(framebufferInfo);
 
 				if (debug)
-					std::cout << "Created framebuffer for frame " << i << std::endl;
+					std::cout << "Created Sky framebuffer for frame " << i << std::endl;
+			}
+			catch (vk::SystemError err)
+			{
+				if (debug)
+					std::cout << "Failed to create Sky framebuffer for frame " << i << std::endl;
+			}
+
+
+			attachments.push_back(frames[i].depthBufferView);
+
+			framebufferInfo.renderPass = inputChunk.renderPass[PipelineTypes::STANDARD];
+			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			framebufferInfo.pAttachments = attachments.data();
+
+			try 
+			{
+				frames[i].framebuffer[PipelineTypes::STANDARD] = inputChunk.device.createFramebuffer(framebufferInfo);
+
+				if (debug)
+					std::cout << "Created standard framebuffer for frame " << i << std::endl;
 			}
 			catch (vk::SystemError err) 
 			{
 				if (debug)
-					std::cout << "Failed to create framebuffer for frame " << i << std::endl;
+					std::cout << "Failed to create standard framebuffer for frame " << i << std::endl;
 			}
 
 		}

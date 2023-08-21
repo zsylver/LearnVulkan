@@ -58,4 +58,10 @@ enum class MeshTypes
 	ROOM
 };
 
+enum class PipelineTypes
+{
+	SKY,
+	STANDARD
+};
+
 std::vector<std::string> Split(std::string line, std::string delimiter);

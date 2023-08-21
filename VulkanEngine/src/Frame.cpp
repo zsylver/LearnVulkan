@@ -8,11 +8,16 @@ void vkUtil::SwapChainFrame::CreateDescriptorResources()
 	input.m_logicalDevice = logicalDevice;
 	input.m_physicalDevice = physicalDevice;
 	input.m_memoryProperties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-	input.m_size = sizeof(UBO);
+	input.m_size = sizeof(CameraVectors);
 	input.m_usage = vk::BufferUsageFlagBits::eUniformBuffer;
-	cameraDataBuffer = CreateBuffer(input);
+	cameraVectorBuffer = CreateBuffer(input);
 
-	cameraDataWriteLocation = logicalDevice.mapMemory(cameraDataBuffer.m_bufferMemory, 0, sizeof(UBO));
+	cameraVectorWriteLocation = logicalDevice.mapMemory(cameraVectorBuffer.m_bufferMemory, 0, sizeof(CameraVectors));
+
+	input.m_size = sizeof(CameraMatrices);
+	cameraMatrixBuffer = CreateBuffer(input);
+
+	cameraMatrixWriteLocation = logicalDevice.mapMemory(cameraMatrixBuffer.m_bufferMemory, 0, sizeof(CameraMatrices));
 
 	input.m_size = 1024 * sizeof(glm::mat4);
 	input.m_usage = vk::BufferUsageFlagBits::eStorageBuffer;
@@ -24,9 +29,13 @@ void vkUtil::SwapChainFrame::CreateDescriptorResources()
 	for (int i = 0; i < 1024; ++i)
 		modelTransforms.push_back(glm::mat4(1.f));
 
-	uniformBufferDescriptor.buffer = cameraDataBuffer.m_buffer;
-	uniformBufferDescriptor.offset = 0;
-	uniformBufferDescriptor.range = sizeof(UBO);
+	cameraVectorDescriptor.buffer = cameraVectorBuffer.m_buffer;
+	cameraVectorDescriptor.offset = 0;
+	cameraVectorDescriptor.range = sizeof(CameraVectors);
+
+	cameraMatrixDescriptor.buffer = cameraMatrixBuffer.m_buffer;
+	cameraMatrixDescriptor.offset = 0;
+	cameraMatrixDescriptor.range = sizeof(CameraMatrices);
 
 	modelBufferDescriptor.buffer = modelBuffer.m_buffer;
 	modelBufferDescriptor.offset = 0;
@@ -46,53 +55,71 @@ void vkUtil::SwapChainFrame::CreateDepthResources()
 	imageInfo.m_width = width;
 	imageInfo.m_height = height;
 	imageInfo.m_format = depthFormat;
+	imageInfo.m_arrayCount = 1;
 
 	depthBuffer = vkImage::CreateImage(imageInfo);
 	depthBufferMemory = vkImage::CreateImageMemory(imageInfo, depthBuffer);
-	depthBufferView = vkImage::CreateImageView(logicalDevice, depthBuffer, depthFormat, vk::ImageAspectFlagBits::eDepth);
+	depthBufferView = vkImage::CreateImageView(logicalDevice, depthBuffer, depthFormat, vk::ImageAspectFlagBits::eDepth, vk::ImageViewType::e2D, 1);
 }
 
 void vkUtil::SwapChainFrame::WriteDescriptorSet()
 {
-	vk::WriteDescriptorSet writeInfo;
+	logicalDevice.updateDescriptorSets(writeOps, nullptr);
+}
 
-	writeInfo.dstSet = descriptorSet;
-	writeInfo.dstBinding = 0;
-	writeInfo.dstArrayElement = 0;
-	writeInfo.descriptorCount = 1;
-	writeInfo.descriptorType = vk::DescriptorType::eUniformBuffer;
-	writeInfo.pBufferInfo = &uniformBufferDescriptor;
+void vkUtil::SwapChainFrame::RecordWriteOperations()
+{
+	vk::WriteDescriptorSet cameraVectorWrite;
 
-	logicalDevice.updateDescriptorSets(writeInfo, nullptr);
+	cameraVectorWrite.dstSet = descriptorSet[PipelineTypes::SKY];
+	cameraVectorWrite.dstBinding = 0;
+	cameraVectorWrite.dstArrayElement = 0;
+	cameraVectorWrite.descriptorCount = 1;
+	cameraVectorWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
+	cameraVectorWrite.pBufferInfo = &cameraVectorDescriptor;
 
-	vk::WriteDescriptorSet writeInfo2;
-	writeInfo2.dstSet = descriptorSet;
-	writeInfo2.dstBinding = 1;
-	writeInfo2.dstArrayElement = 0;
-	writeInfo2.descriptorCount = 1;
-	writeInfo2.descriptorType = vk::DescriptorType::eStorageBuffer;
-	writeInfo2.pBufferInfo = &modelBufferDescriptor;
+	vk::WriteDescriptorSet cameraMatrixWrite;
 
-	logicalDevice.updateDescriptorSets(writeInfo2, nullptr);
+	cameraMatrixWrite.dstSet = descriptorSet[PipelineTypes::STANDARD];
+	cameraMatrixWrite.dstBinding = 0;
+	cameraMatrixWrite.dstArrayElement = 0;
+	cameraMatrixWrite.descriptorCount = 1;
+	cameraMatrixWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
+	cameraMatrixWrite.pBufferInfo = &cameraMatrixDescriptor;
+
+	vk::WriteDescriptorSet ssboWrite;
+	ssboWrite.dstSet = descriptorSet[PipelineTypes::STANDARD];
+	ssboWrite.dstBinding = 1;
+	ssboWrite.dstArrayElement = 0;
+	ssboWrite.descriptorCount = 1;
+	ssboWrite.descriptorType = vk::DescriptorType::eStorageBuffer;
+	ssboWrite.pBufferInfo = &modelBufferDescriptor;
+
+	writeOps = { { cameraVectorWrite, cameraMatrixWrite, ssboWrite } };
 }
 
 void vkUtil::SwapChainFrame::Destroy()
 {
-	logicalDevice.destroyImage(depthBuffer);
-	logicalDevice.freeMemory(depthBufferMemory);
-	logicalDevice.destroyImageView(depthBufferView);
-
 	logicalDevice.destroyImageView(imageView);
-	logicalDevice.destroyFramebuffer(framebuffer);
+	logicalDevice.destroyFramebuffer(framebuffer[PipelineTypes::SKY]);
+	logicalDevice.destroyFramebuffer(framebuffer[PipelineTypes::STANDARD]);
 	logicalDevice.destroyFence(inFlight);
 	logicalDevice.destroySemaphore(imageAvailable);
 	logicalDevice.destroySemaphore(renderFinished);
 
-	logicalDevice.unmapMemory(cameraDataBuffer.m_bufferMemory);
-	logicalDevice.freeMemory(cameraDataBuffer.m_bufferMemory);
-	logicalDevice.destroyBuffer(cameraDataBuffer.m_buffer);
+	logicalDevice.unmapMemory(cameraVectorBuffer.m_bufferMemory);
+	logicalDevice.freeMemory(cameraVectorBuffer.m_bufferMemory);
+	logicalDevice.destroyBuffer(cameraVectorBuffer.m_buffer);
+
+	logicalDevice.unmapMemory(cameraMatrixBuffer.m_bufferMemory);
+	logicalDevice.freeMemory(cameraMatrixBuffer.m_bufferMemory);
+	logicalDevice.destroyBuffer(cameraMatrixBuffer.m_buffer);
 
 	logicalDevice.unmapMemory(modelBuffer.m_bufferMemory);
 	logicalDevice.freeMemory(modelBuffer.m_bufferMemory);
 	logicalDevice.destroyBuffer(modelBuffer.m_buffer);
+
+	logicalDevice.destroyImage(depthBuffer);
+	logicalDevice.freeMemory(depthBufferMemory);
+	logicalDevice.destroyImageView(depthBufferView);
 }

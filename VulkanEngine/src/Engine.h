@@ -5,6 +5,8 @@
 #include "Scene.h"
 #include "VertexManager.h"
 #include "Image.h"
+#include "Texture.h"
+#include "CubeMap.h"
 
 class Engine 
 {
@@ -46,9 +48,10 @@ private:
 	vk::Extent2D m_swapChainExtent;
 
 	//pipeline-related variables
-	vk::PipelineLayout m_pipelineLayout;
-	vk::RenderPass m_renderPass;
-	vk::Pipeline m_pipeline;
+	std::vector<PipelineTypes> m_pipelineTypes = { { PipelineTypes::SKY, PipelineTypes::STANDARD } };
+	std::unordered_map<PipelineTypes, vk::PipelineLayout> m_pipelineLayout;
+	std::unordered_map<PipelineTypes, vk::RenderPass> m_renderPass;
+	std::unordered_map<PipelineTypes, vk::Pipeline> m_pipeline;
 
 	//Command-related variables
 	vk::CommandPool m_commandPool;
@@ -58,14 +61,15 @@ private:
 	int m_maxFramesInFlight, m_frameNumber;
 
 	//Descriptor objects
-	vk::DescriptorSetLayout m_frameSetLayout;
+	std::unordered_map<PipelineTypes, vk::DescriptorSetLayout> m_frameSetLayout;
 	vk::DescriptorPool m_frameDescriptorPool;
-	vk::DescriptorSetLayout m_meshSetLayout;
+	std::unordered_map<PipelineTypes, vk::DescriptorSetLayout> m_meshSetLayout;
 	vk::DescriptorPool m_meshDescriptorPool;
 
 	//Asset pointers
 	VertexManager* m_meshes;
 	std::unordered_map<MeshTypes, vkImage::Texture*> m_materials;
+	vkImage::CubeMap* m_cubeMap;
 
 	//Instance setup
 	void CreateInstance();
@@ -85,10 +89,11 @@ private:
 	void CreateFrameResources();
 
 	void CreateAssets();
+
 	void PrepareScene(vk::CommandBuffer commandBuffer);
 	void PrepareFrame(uint32_t imageIndex, Scene* scene);
-
-	void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+	void RecordDrawCommandsScene(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+	void RecordDrawCommandsSky(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 	void RenderObjects(vk::CommandBuffer commandBuffer, MeshTypes objectType, uint32_t& startInstance, uint32_t instanceCount);
 
 	void DestroySwapChain();
